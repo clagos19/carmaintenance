@@ -4,6 +4,7 @@ import { carName, dueLine, km } from '../lib/format'
 import { summary } from '../lib/status'
 import { exportData, importData, useCars } from '../store'
 import { downloadFile } from '../lib/ics'
+import { CarHero } from './CarHero'
 import { IconChevron, IconPlus } from './Icons'
 import { StatusDot } from './bits'
 
@@ -61,7 +62,7 @@ export function Garage() {
             {sums.map(({ car, now, soon }) => (
               <a key={car.id} className="car-card" href={`#/car/${car.id}`}>
                 <div className="car-card-art">
-                  <SideView body={car.specs.bodyType} color={car.color} />
+                  <CarHero car={car} creditLink={false} />
                 </div>
                 <div className="car-card-info">
                   <div>

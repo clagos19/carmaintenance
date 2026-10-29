@@ -1,9 +1,25 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, type MouseEvent } from 'react'
 import { CarArt, SPOTS, VIEWBOX } from '../art/CarArt'
 import { dueLine } from '../lib/format'
+import { locateParts } from '../lib/photos'
+import { getApiKey, prepareImage } from '../lib/scan'
 import { carTasks } from '../lib/status'
+import { setPhoto, setPhotoSpot, storageFull } from '../store'
 import type { Car, ViewId } from '../types'
 import { StatusPill } from './bits'
+
+const CameraSmall = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M4 8.5A2.5 2.5 0 0 1 6.5 6h1.2l1.3-2h6l1.3 2h1.2A2.5 2.5 0 0 1 20 8.5v8A2.5 2.5 0 0 1 17.5 19h-11A2.5 2.5 0 0 1 4 16.5z" />
+    <circle cx="12" cy="12.5" r="3.5" />
+  </svg>
+)
+
+const PHOTO_PROMPT: Record<ViewId, string> = {
+  top: 'Use a photo from above',
+  side: 'Use a photo of your car',
+  engine: 'Use a photo of your engine',
+}
 
 const VIEWS: { id: ViewId; label: string }[] = [
   { id: 'top', label: 'Top' },
@@ -19,6 +35,46 @@ export function ViewPager({ car, onOpen }: { car: Car; onOpen: (taskId: string) 
   const view = VIEWS[vi].id
   const tasks = carTasks(car, view)
   const ai = Math.min(active[view], Math.max(0, tasks.length - 1))
+  const [adjust, setAdjust] = useState(false)
+  const [busy, setBusy] = useState<ViewId | null>(null)
+  const [note, setNote] = useState<{ text: string; err?: boolean } | null>(null)
+  const photo = car.photos?.[view]
+
+  const onPhoto = async (file: File | undefined) => {
+    if (!file) return
+    const v = view
+    setBusy(v)
+    setNote({ text: 'Placing the dots on your photo…' })
+    try {
+      const img = await prepareImage(file, 1200, 0.8)
+      const key = getApiKey()
+      let spots: Record<string, { x: number; y: number }> = {}
+      let msg = ''
+      if (key) {
+        try {
+          const r = await locateParts(car, v, img.data, key)
+          spots = r.spots
+          msg = r.missing.length ? `Couldn’t see ${r.missing.length} part${r.missing.length === 1 ? '' : 's'} in the photo. Use Adjust dots to place them.` : 'Dots placed. Use Adjust dots if any are off.'
+        } catch {
+          msg = 'Couldn’t place the dots automatically. Use Adjust dots to place them.'
+        }
+      } else {
+        msg = 'Add your AI key (via the + button) to place dots automatically, or use Adjust dots.'
+      }
+      setPhoto(car.id, v, { src: img.preview, aspect: img.aspect, spots })
+      setNote(storageFull ? { text: 'Your phone’s storage for this app is full, so the photo won’t be kept. Remove another photo first.', err: true } : { text: msg })
+    } catch (e) {
+      setNote({ text: e instanceof Error ? e.message : 'That photo could not be used.', err: true })
+    } finally {
+      setBusy(null)
+    }
+  }
+
+  const place = (e: MouseEvent<HTMLDivElement>) => {
+    if (!adjust || !photo || !tasks[ai]) return
+    const r = e.currentTarget.getBoundingClientRect()
+    setPhotoSpot(car.id, view, tasks[ai].task.spot, { x: ((e.clientX - r.left) / r.width) * 100, y: ((e.clientY - r.top) / r.height) * 100 })
+  }
 
   // Start on the side view.
   useEffect(() => {
@@ -30,6 +86,8 @@ export function ViewPager({ car, onOpen }: { car: Car; onOpen: (taskId: string) 
     const el = pager.current
     if (el) el.scrollTo({ left: i * el.clientWidth, behavior: 'smooth' })
     setVi(i)
+    setAdjust(false)
+    setNote(null)
   }
 
   const onPagerScroll = () => {
@@ -38,6 +96,8 @@ export function ViewPager({ car, onOpen }: { car: Car; onOpen: (taskId: string) 
     const i = Math.round(el.scrollLeft / el.clientWidth)
     if (i !== vi) {
       setVi(i)
+      setAdjust(false)
+      setNote(null)
       rail.current?.scrollTo({ left: 0 })
     }
   }
@@ -74,12 +134,17 @@ export function ViewPager({ car, onOpen }: { car: Car; onOpen: (taskId: string) 
         {VIEWS.map((v) => {
           const vt = carTasks(car, v.id)
           const box = VIEWBOX[v.id]
+          const ph = car.photos?.[v.id]
           return (
-            <div key={v.id} className={`slide slide-${v.id}`}>
-              <div className="art-wrap" style={{ aspectRatio: `${box.w} / ${box.h}` }}>
-                <CarArt view={v.id} body={car.specs.bodyType} color={car.color} powertrain={car.specs.powertrain} />
+            <div key={v.id} className={`slide slide-${v.id} ${ph ? 'has-photo' : ''}`}>
+              <div
+                className={`art-wrap ${ph ? 'photo-slide' : ''} ${adjust && v.id === view ? 'adjusting' : ''}`}
+                style={{ aspectRatio: ph ? String(ph.aspect) : `${box.w} / ${box.h}` }}
+                onClick={v.id === view ? place : undefined}
+              >
+                {ph ? <img src={ph.src} alt="" /> : <CarArt view={v.id} body={car.specs.bodyType} color={car.color} powertrain={car.specs.powertrain} />}
                 {vt.map((t, i) => {
-                  const p = SPOTS[v.id][t.task.spot]
+                  const p = ph ? ph.spots[t.task.spot] : SPOTS[v.id][t.task.spot]
                   if (!p) return null
                   const on = v.id === view && i === ai
                   return (
@@ -87,7 +152,12 @@ export function ViewPager({ car, onOpen }: { car: Car; onOpen: (taskId: string) 
                       key={t.task.id}
                       className={`hotspot hs-${t.st.status} ${on ? 'on' : ''}`}
                       style={{ left: `${p.x}%`, top: `${p.y}%` }}
-                      onClick={() => (on ? onOpen(t.task.id) : focus(i))}
+                      onClick={(e) => {
+                        if (adjust) return
+                        e.stopPropagation()
+                        if (on) onOpen(t.task.id)
+                        else focus(i)
+                      }}
                       aria-label={t.task.name}
                     >
                       <span className="hs-dot" />
@@ -100,6 +170,28 @@ export function ViewPager({ car, onOpen }: { car: Car; onOpen: (taskId: string) 
           )
         })}
       </div>
+
+      <div className="view-tools">
+        <label className="tool-btn">
+          <input type="file" accept="image/*" hidden disabled={!!busy} onChange={(e) => { onPhoto(e.target.files?.[0]); e.target.value = '' }} />
+          <CameraSmall /> {busy === view ? 'Working…' : photo ? 'Retake photo' : PHOTO_PROMPT[view]}
+        </label>
+        {photo && (
+          <>
+            <button className={`tool-btn ${adjust ? 'on' : ''}`} onClick={() => setAdjust((a) => !a)}>
+              {adjust ? 'Done adjusting' : 'Adjust dots'}
+            </button>
+            <button className="tool-btn" onClick={() => { setPhoto(car.id, view, null); setAdjust(false); setNote(null) }}>
+              Use drawing
+            </button>
+          </>
+        )}
+      </div>
+      {adjust && tasks[ai] ? (
+        <p className="view-hint">Tap the photo where the {tasks[ai].task.name.toLowerCase()} is. Swipe the cards below to pick another part.</p>
+      ) : (
+        note && <p className={`view-hint ${note.err ? 'err' : ''}`}>{note.text}</p>
+      )}
 
       <div className="rail" ref={rail} onScroll={onRailScroll}>
         {tasks.map((t, i) => (

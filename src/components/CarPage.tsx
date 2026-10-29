@@ -8,6 +8,7 @@ import { summary, type CarTask } from '../lib/status'
 import { CAR_COLORS, dailyKm, removeAppointment, removeCar, setKmAuto, setOdometer, updateCarInfo, useCar } from '../store'
 import type { Car, SpecKey } from '../types'
 import { BookingSheet } from './BookingSheet'
+import { CarHero } from './CarHero'
 import { IconBack, IconChevron, IconGauge, IconMore, IconPlus } from './Icons'
 import { Sheet } from './Sheet'
 import { ScanSheet } from './ScanSheet'
@@ -57,6 +58,8 @@ export function CarPage({ id, openTask }: { id: string; openTask?: string }) {
         <h1>{car.nickname || car.model}</h1>
         <p className="muted">{carName(car)}{car.trim ? ` ${car.trim}` : ''} · {car.specs.engine}</p>
       </header>
+
+      <CarHero car={car} />
 
       <Odometer car={car} />
 

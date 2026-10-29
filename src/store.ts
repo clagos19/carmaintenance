@@ -1,6 +1,6 @@
 import { useSyncExternalStore } from 'react'
 import { resolveSpecs } from './lib/specs'
-import type { Appointment, Car, CarSpecs, Receipt, SpecKey, TaskRecord } from './types'
+import type { Appointment, Car, CarPhoto, CarSpecs, Receipt, SpecKey, TaskRecord, ViewId, WikiPhoto } from './types'
 
 const KEY = 'carmaint:v1'
 const DAY = 86400000
@@ -25,12 +25,17 @@ function load(): State {
 let state = applyKmAuto(load())
 const listeners = new Set<() => void>()
 
+/** Set when the last save failed, usually because photos filled the phone's storage for this site. */
+export let storageFull = false
+
 function set(next: State) {
   state = next
   try {
     localStorage.setItem(KEY, JSON.stringify(state))
+    storageFull = false
   } catch {
-    /* private mode: keep working in memory */
+    // Private mode or quota exceeded: keep working in memory.
+    storageFull = true
   }
   listeners.forEach((l) => l())
 }
@@ -201,6 +206,27 @@ export function applyReceipt(id: string, r: Receipt, km: number) {
   const date = r.date
   for (const taskId of r.taskIds) clearTask(id, taskId, { km, date, note: r.shop ? `Receipt from ${r.shop}` : 'From a receipt' })
   updateCar(id, (c) => ({ ...c, receipts: [r, ...(c.receipts ?? [])].slice(0, 50) }))
+}
+
+export function setPhoto(id: string, view: ViewId, photo: CarPhoto | null) {
+  updateCar(id, (c) => {
+    const photos = { ...(c.photos ?? {}) }
+    if (photo) photos[view] = photo
+    else delete photos[view]
+    return { ...c, photos }
+  })
+}
+
+export function setPhotoSpot(id: string, view: ViewId, key: string, pt: { x: number; y: number }) {
+  updateCar(id, (c) => {
+    const p = c.photos?.[view]
+    if (!p) return c
+    return { ...c, photos: { ...c.photos, [view]: { ...p, spots: { ...p.spots, [key]: pt } } } }
+  })
+}
+
+export function setWikiPhoto(id: string, w: WikiPhoto | null) {
+  updateCar(id, (c) => ({ ...c, wikiPhoto: w }))
 }
 
 export function exportData() {

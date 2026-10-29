@@ -53,6 +53,20 @@ export interface Receipt {
   scannedAt: string
 }
 
+export interface WikiPhoto {
+  src: string
+  credit: string
+  license: string
+  page: string
+}
+
+/** A photo of the user's own car for one view, with the maintenance dots placed on it (percent of the photo). */
+export interface CarPhoto {
+  src: string
+  aspect: number
+  spots: Record<string, { x: number; y: number }>
+}
+
 export interface Car {
   id: string
   make: string
@@ -75,6 +89,9 @@ export interface Car {
   appointments: Appointment[]
   /** Receipts and work orders read with the scanner */
   receipts?: Receipt[]
+  photos?: Partial<Record<ViewId, CarPhoto>>
+  /** Lead photo of the model from Wikipedia; null once looked up and none was found */
+  wikiPhoto?: WikiPhoto | null
   profileComplete: boolean
   createdAt: string
 }

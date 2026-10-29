@@ -40,7 +40,7 @@ export interface ScanResult {
 }
 
 /** Shrink a photo so uploads stay fast on mobile data and well under the API's image limits. */
-export async function prepareImage(file: File, maxSide = 1600): Promise<{ data: string; preview: string }> {
+export async function prepareImage(file: File, maxSide = 1600, quality = 0.85): Promise<{ data: string; preview: string; aspect: number }> {
   const url = URL.createObjectURL(file)
   try {
     const img = await new Promise<HTMLImageElement>((resolve, reject) => {
@@ -54,8 +54,8 @@ export async function prepareImage(file: File, maxSide = 1600): Promise<{ data: 
     canvas.width = Math.round(img.naturalWidth * scale)
     canvas.height = Math.round(img.naturalHeight * scale)
     canvas.getContext('2d')!.drawImage(img, 0, 0, canvas.width, canvas.height)
-    const preview = canvas.toDataURL('image/jpeg', 0.85)
-    return { data: preview.split(',')[1], preview }
+    const preview = canvas.toDataURL('image/jpeg', quality)
+    return { data: preview.split(',')[1], preview, aspect: canvas.width / canvas.height }
   } finally {
     URL.revokeObjectURL(url)
   }
