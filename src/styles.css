@@ -335,3 +335,55 @@ input:focus, select:focus { border-color: rgba(53, 99, 233, 0.45); box-shadow: 0
   .brand-grid { grid-template-columns: repeat(4, 1fr); }
   .year-grid { grid-template-columns: repeat(6, 1fr); }
 }
+
+/* ---------- receipt scanning ---------- */
+.fab {
+  position: fixed; z-index: 25;
+  right: max(18px, calc(50% - 280px + 18px));
+  bottom: calc(var(--safe-b) + 84px);
+  width: 62px; height: 62px; border-radius: 50%;
+  display: grid; place-items: center;
+}
+.fab-ring {
+  position: absolute; inset: 0; border-radius: 50%;
+  background: conic-gradient(from 0deg, #3563e9, #2f9e6b, #e9a23b, #3563e9);
+  animation: spin 6s linear infinite;
+  box-shadow: 0 10px 28px rgba(53, 99, 233, 0.35);
+}
+.fab-ring::after { content: ''; position: absolute; inset: -8px; border-radius: 50%; background: inherit; filter: blur(14px); opacity: 0.35; z-index: -1; }
+.fab-core {
+  position: relative; width: 54px; height: 54px; border-radius: 50%;
+  display: grid; place-items: center;
+  background: radial-gradient(circle at 35% 30%, #3a3f49, #14171c 70%);
+  color: #fff; box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.15);
+  transition: transform 0.25s cubic-bezier(0.3, 0.7, 0.2, 1.4);
+}
+.fab-core svg { width: 26px; height: 26px; stroke-width: 2.2; }
+.fab:active .fab-core { transform: scale(0.9) rotate(90deg); }
+.fab-label {
+  position: absolute; right: 72px; white-space: nowrap;
+  padding: 6px 12px; border-radius: 12px; font-size: 13px; font-weight: 650;
+  background: rgba(255, 255, 255, 0.92); color: var(--ink-2); box-shadow: var(--shadow);
+  animation: fab-hint 4s ease 0.6s both;
+  pointer-events: none;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+@keyframes fab-hint { 0% { opacity: 0; transform: translateX(6px); } 12%, 75% { opacity: 1; transform: none; } 100% { opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .fab-ring, .scan-beam, .hotspot.on::before { animation: none; } }
+
+.scan-drop {
+  display: flex; flex-direction: column; align-items: center; gap: 10px;
+  padding: 28px 16px; border-radius: 20px; cursor: pointer;
+  border: 1.5px dashed rgba(53, 99, 233, 0.35); background: var(--accent-soft); color: var(--accent);
+}
+.scan-drop-icon { width: 56px; height: 56px; border-radius: 50%; background: #fff; display: grid; place-items: center; box-shadow: var(--shadow); }
+.scan-reading { position: relative; border-radius: 18px; overflow: hidden; display: flex; flex-direction: column; gap: 10px; }
+.scan-reading img { width: 100%; max-height: 50dvh; object-fit: cover; border-radius: 18px; filter: saturate(0.8); }
+.scan-beam { position: absolute; left: 0; right: 0; top: 0; height: 60px; background: linear-gradient(180deg, transparent, rgba(53, 99, 233, 0.35), transparent); animation: beam 1.6s ease-in-out infinite alternate; }
+@keyframes beam { from { transform: translateY(0); } to { transform: translateY(calc(50dvh - 60px)); } }
+.receipt-card { display: flex; gap: 12px; align-items: flex-start; padding: 12px; border-radius: 16px; background: var(--surface-2); border: 1px solid var(--line); }
+.receipt-card img { width: 64px; height: 84px; object-fit: cover; border-radius: 10px; flex-shrink: 0; }
+.banner-red { background: var(--red-soft); color: #a8292e; }
+.banner-amber { background: var(--amber-soft); color: #8a5512; }
+.center { text-align: center; align-self: center; }
+.choice.manual { background: transparent; box-shadow: none; border: 1.5px dashed rgba(20, 23, 28, 0.14); }

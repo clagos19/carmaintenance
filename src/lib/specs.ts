@@ -1,3 +1,4 @@
+import { catalogBody, isCatalogEv } from '../data/catalog'
 import { GENERIC_BY_BODY, findMake, findModel, guessBody } from '../data/vehicles'
 import type { CarSpecs, SpecKey, SpecSource } from '../types'
 
@@ -82,10 +83,13 @@ export function resolveSpecs(
 ): { specs: CarSpecs; sources: Record<SpecKey, SpecSource> } {
   const mk = findMake(make)
   const md = findModel(make, model)
-  const body = given.bodyType ?? md?.body ?? guessBody(model)
+  const body = given.bodyType ?? md?.body ?? catalogBody(make, model) ?? guessBody(model)
   const generic = GENERIC_BY_BODY[body]
 
   const fromSheet: Partial<CarSpecs> = {}
+  // Catalog models without a full spec sheet still have a known body style (and EVs are known to be electric).
+  if (!md && catalogBody(make, model)) fromSheet.bodyType = catalogBody(make, model)
+  if (!md && isCatalogEv(make, model)) fromSheet.powertrain = 'ev'
   if (md) {
     Object.assign(fromSheet, {
       bodyType: md.body,

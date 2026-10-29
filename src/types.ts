@@ -44,6 +44,15 @@ export interface Appointment {
   note?: string
 }
 
+export interface Receipt {
+  date: string
+  shop: string | null
+  total: number | null
+  summary: string
+  taskIds: string[]
+  scannedAt: string
+}
+
 export interface Car {
   id: string
   make: string
@@ -64,6 +73,8 @@ export interface Car {
   sources: Record<SpecKey, SpecSource>
   history: Record<string, TaskRecord[]>
   appointments: Appointment[]
+  /** Receipts and work orders read with the scanner */
+  receipts?: Receipt[]
   profileComplete: boolean
   createdAt: string
 }

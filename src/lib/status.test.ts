@@ -66,3 +66,18 @@ describe('resolveSpecs', () => {
     expect(sources.drivingStyle).toBe('you')
   })
 })
+
+describe('catalog coverage', () => {
+  it('knows models without a full spec sheet', () => {
+    expect(resolveSpecs('Jeep', 'Cherokee').specs.bodyType).toBe('suv')
+    expect(resolveSpecs('Toyota', '4Runner').sources.tireSize).toBe('spec')
+    expect(resolveSpecs('Volvo', 'XC60').sources.bodyType).toBe('spec')
+  })
+
+  it('treats catalog EVs as electric', () => {
+    const { specs } = resolveSpecs('Rivian', 'R1T')
+    expect(specs.powertrain).toBe('ev')
+    expect(specs.bodyType).toBe('truck')
+    expect(specs.oilIntervalKm).toBe(0)
+  })
+})

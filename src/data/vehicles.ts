@@ -55,6 +55,10 @@ export const MAKES: MakeSpec[] = [
       { name: 'Highlander', body: 'suv', engine: '2.4L turbo 4-cyl', transmission: 'automatic', drivetrain: 'awd', oilType: '0W-20 synthetic', oilCapacityL: 5.7, tireSize: '235/55R20', sparkPlugKm: 190000 },
       { name: 'Tacoma', body: 'truck', engine: '2.4L turbo 4-cyl', transmission: 'automatic', drivetrain: '4wd', oilType: '0W-20 synthetic', oilCapacityL: 5.7, tireSize: '265/70R17', sparkPlugKm: 190000 },
       { name: 'Tundra', body: 'truck', engine: '3.4L twin-turbo V6', transmission: 'automatic', drivetrain: '4wd', oilType: '0W-20 synthetic', oilCapacityL: 7.4, tireSize: '265/70R18', sparkPlugKm: 190000 },
+      { name: '4Runner', body: 'suv', engine: '4.0L V6', transmission: 'automatic', drivetrain: '4wd', oilType: '0W-20 synthetic', oilCapacityL: 6.2, tireSize: '265/70R17', sparkPlugKm: 190000 },
+      { name: 'Sequoia', body: 'suv', powertrain: 'hybrid', engine: '3.4L twin-turbo V6 hybrid', transmission: 'automatic', drivetrain: '4wd', oilType: '0W-20 synthetic', oilCapacityL: 7.4, tireSize: '265/70R18', sparkPlugKm: 190000 },
+      { name: 'Sienna', body: 'suv', powertrain: 'hybrid', engine: '2.5L 4-cyl hybrid', transmission: 'cvt', drivetrain: 'awd', oilCapacityL: 4.5, tireSize: '235/65R17', sparkPlugKm: 190000 },
+      { name: 'Corolla Cross', body: 'suv', engine: '2.0L 4-cyl', transmission: 'cvt', drivetrain: 'awd', oilCapacityL: 4.2, tireSize: '225/55R18', sparkPlugKm: 190000 },
       { name: 'Prius', body: 'hatchback', powertrain: 'hybrid', engine: '2.0L 4-cyl hybrid', transmission: 'cvt', drivetrain: 'fwd', oilCapacityL: 4.2, tireSize: '195/50R19', sparkPlugKm: 190000 },
     ],
   },
@@ -198,6 +202,8 @@ export const MAKES: MakeSpec[] = [
     models: [
       { name: 'Wrangler', body: 'suv', engine: '3.6L V6', transmission: 'automatic', drivetrain: '4wd', oilCapacityL: 5.7, tireSize: '245/75R17', sparkPlugKm: 160000 },
       { name: 'Grand Cherokee', body: 'suv', engine: '3.6L V6', transmission: 'automatic', drivetrain: '4wd', oilCapacityL: 5.7, tireSize: '265/60R18', sparkPlugKm: 160000 },
+      { name: 'Cherokee', body: 'suv', engine: '2.4L 4-cyl', transmission: 'automatic', drivetrain: '4wd', oilCapacityL: 5.2, tireSize: '225/60R17', sparkPlugKm: 160000 },
+      { name: 'Gladiator', body: 'truck', engine: '3.6L V6', transmission: 'automatic', drivetrain: '4wd', oilCapacityL: 5.7, tireSize: '245/75R17', sparkPlugKm: 160000 },
       { name: 'Compass', body: 'suv', engine: '2.0L turbo 4-cyl', transmission: 'automatic', drivetrain: '4wd', oilType: '0W-20 synthetic', oilCapacityL: 4.7, tireSize: '225/60R17', sparkPlugKm: 160000 },
     ],
   },
@@ -254,7 +260,7 @@ export const GENERIC_BY_BODY: Record<BodyType, Omit<CarSpecs, 'drivingStyle' | '
 export function guessBody(model: string): BodyType {
   const m = model.toLowerCase()
   if (/(f-?\d{3}|silverado|sierra|ram|tacoma|tundra|ranger|frontier|colorado|canyon|titan|ridgeline|maverick|gladiator|truck|\d{4}hd)/.test(m)) return 'truck'
-  if (/(cx-|rav|cr-v|hr-v|suv|x\d|q\d|gl[a-z]|rogue|tucson|santa|sorento|sportage|explorer|escape|equinox|outback|forester|tiguan|atlas|highlander|pilot|wrangler|cherokee|model y|model x|kona|seltos|venue|edge|bronco|trax|blazer|traverse|tahoe|suburban|yukon|pathfinder|murano|ascent|crosstrek|telluride|palisade|odyssey|sienna|pacifica|carnival)/.test(m)) return 'suv'
+  if (/(4runner|sequoia|cherokee|wagoneer|cx-|rav|cr-v|hr-v|suv|x\d|q\d|gl[a-z]|rogue|tucson|santa|sorento|sportage|explorer|escape|equinox|outback|forester|tiguan|atlas|highlander|pilot|wrangler|cherokee|model y|model x|kona|seltos|venue|edge|bronco|trax|blazer|traverse|tahoe|suburban|yukon|pathfinder|murano|ascent|crosstrek|telluride|palisade|odyssey|sienna|pacifica|carnival)/.test(m)) return 'suv'
   if (/(hatch|golf|fit|yaris|sport|leaf|bolt|prius|impreza|veloster|mini)/.test(m)) return 'hatchback'
   return 'sedan'
 }

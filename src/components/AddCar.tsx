@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { SideView } from '../art/CarArt'
+import { CATALOG, catalogBody } from '../data/catalog'
 import { MAKES, findMake, findModel, guessBody } from '../data/vehicles'
 import { back, go } from '../lib/nav'
 import { ASSUMPTION_ORDER, SPEC_LABELS, SPEC_OPTIONS, formatSpec, resolveSpecs } from '../lib/specs'
@@ -76,7 +77,7 @@ export function AddCar() {
       {step === 'choose' && (
         <div className="stack">
           <div className="hero-art">
-            <SideView body={findModel(make, model)?.body ?? guessBody(model)} color={CAR_COLORS[0]} />
+            <SideView body={findModel(make, model)?.body ?? catalogBody(make, model) ?? guessBody(model)} color={CAR_COLORS[0]} />
           </div>
           <header className="page-head center">
             <p className="eyebrow">Adding</p>
@@ -104,9 +105,40 @@ export function AddCar() {
   )
 }
 
+const ALL_MAKES = [...new Set([...MAKES.map((m) => m.name), ...Object.keys(CATALOG)])].sort((a, b) => a.localeCompare(b))
+const title = (s: string) => s.trim().replace(/\b\w/g, (c) => c.toUpperCase())
+
+/** Free-text entry for anything not in the lists */
+function Manual({ label, placeholder, onDone }: { label: string; placeholder: string; onDone: (v: string) => void }) {
+  const [open, setOpen] = useState(false)
+  const [v, setV] = useState('')
+  if (!open) {
+    return (
+      <button className="choice manual" onClick={() => setOpen(true)}>
+        <div>
+          <div className="choice-title">{label}</div>
+          <div className="muted small">Type it in. We’ll use typical specs and flag them as assumptions.</div>
+        </div>
+        <IconChevron />
+      </button>
+    )
+  }
+  return (
+    <div className="card form">
+      <label className="field">
+        <span>{label}</span>
+        <div className="input-row">
+          <input autoFocus value={v} onChange={(e) => setV(e.target.value)} placeholder={placeholder} onKeyDown={(e) => e.key === 'Enter' && v.trim() && onDone(v.trim())} />
+          <button className="btn btn-primary" disabled={!v.trim()} onClick={() => onDone(v.trim())}>Next</button>
+        </div>
+      </label>
+    </div>
+  )
+}
+
 function PickMake({ onPick }: { onPick: (m: string) => void }) {
   const [q, setQ] = useState('')
-  const list = MAKES.map((m) => m.name).filter((n) => n.toLowerCase().includes(q.toLowerCase()))
+  const list = ALL_MAKES.filter((n) => n.toLowerCase().includes(q.toLowerCase()))
   return (
     <div className="stack">
       <header className="page-head">
@@ -114,7 +146,7 @@ function PickMake({ onPick }: { onPick: (m: string) => void }) {
       </header>
       <div className="search">
         <IconSearch />
-        <input autoFocus value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search brands" />
+        <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search brands" />
       </div>
       <div className="brand-grid">
         {list.map((n) => (
@@ -124,12 +156,13 @@ function PickMake({ onPick }: { onPick: (m: string) => void }) {
           </button>
         ))}
       </div>
-      {q.trim() && !findMake(q) && (
-        <button className="choice" onClick={() => onPick(q.trim().replace(/\b\w/g, (c) => c.toUpperCase()))}>
-          <div className="choice-title">Use “{q.trim()}”</div>
+      {q.trim() && !list.length && (
+        <button className="choice" onClick={() => onPick(title(q))}>
+          <div className="choice-title">Use “{title(q)}”</div>
           <IconChevron />
         </button>
       )}
+      <Manual label="My brand isn’t listed" placeholder="e.g. Hummer" onDone={(v) => onPick(title(v))} />
     </div>
   )
 }
@@ -137,7 +170,8 @@ function PickMake({ onPick }: { onPick: (m: string) => void }) {
 function PickModel({ make, onPick }: { make: string; onPick: (m: string) => void }) {
   const [q, setQ] = useState('')
   const [more, setMore] = useState<string[]>([])
-  const bundled = findMake(make)?.models.map((m) => m.name) ?? []
+  const full = findMake(make)?.models.map((m) => m.name) ?? []
+  const catalog = (Object.entries(CATALOG).find(([m]) => m.toLowerCase() === make.toLowerCase())?.[1] ?? []).map((m) => m.name)
 
   useEffect(() => {
     let alive = true
@@ -148,10 +182,10 @@ function PickModel({ make, onPick }: { make: string; onPick: (m: string) => void
   }, [make])
 
   const needle = q.toLowerCase()
-  const top = bundled.filter((n) => n.toLowerCase().includes(needle))
-  const extra = needle
-    ? more.filter((n) => n.toLowerCase().includes(needle) && !bundled.some((b) => b.toLowerCase() === n.toLowerCase())).slice(0, 20)
-    : []
+  const known = [...new Set([...full, ...catalog])].sort((a, b) => a.localeCompare(b, 'en', { numeric: true }))
+  const top = known.filter((n) => n.toLowerCase().includes(needle))
+  const has = (n: string) => known.some((b) => b.toLowerCase() === n.toLowerCase())
+  const extra = needle ? more.filter((n) => n.toLowerCase().includes(needle) && !has(n)).slice(0, 20) : []
 
   return (
     <div className="stack">
@@ -163,36 +197,35 @@ function PickModel({ make, onPick }: { make: string; onPick: (m: string) => void
         <IconSearch />
         <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search models" />
       </div>
-      <div className="list card">
-        {top.map((n) => (
-          <button key={n} className="row" onClick={() => onPick(n)}>
-            <div className="row-main">
-              <div className="row-title">{n}</div>
-              <div className="row-sub">Full spec sheet available</div>
-            </div>
-            <IconChevron />
-          </button>
-        ))}
-        {extra.map((n) => (
-          <button key={n} className="row" onClick={() => onPick(n)}>
-            <div className="row-main">
-              <div className="row-title">{n}</div>
-              <div className="row-sub">Typical specs, some assumptions</div>
-            </div>
-            <IconChevron />
-          </button>
-        ))}
-        {q.trim() && !top.length && !extra.length && (
-          <button className="row" onClick={() => onPick(q.trim())}>
-            <div className="row-main">
-              <div className="row-title">Use “{q.trim()}”</div>
-              <div className="row-sub">We’ll make assumptions you can edit</div>
-            </div>
-            <IconChevron />
-          </button>
-        )}
-        {!q && !top.length && <p className="muted small pad">Type your model name above.</p>}
-      </div>
+      {(top.length > 0 || extra.length > 0) && (
+        <div className="list card">
+          {top.map((n) => (
+            <button key={n} className="row" onClick={() => onPick(n)}>
+              <div className="row-main">
+                <div className="row-title">{n}</div>
+                <div className="row-sub">{full.includes(n) ? 'Full spec sheet' : 'Typical specs for this model type'}</div>
+              </div>
+              <IconChevron />
+            </button>
+          ))}
+          {extra.map((n) => (
+            <button key={n} className="row" onClick={() => onPick(n)}>
+              <div className="row-main">
+                <div className="row-title">{n}</div>
+                <div className="row-sub">From the NHTSA vehicle database · some assumptions</div>
+              </div>
+              <IconChevron />
+            </button>
+          ))}
+        </div>
+      )}
+      {q.trim() && !top.length && !extra.length && (
+        <button className="choice" onClick={() => onPick(q.trim())}>
+          <div className="choice-title">Use “{q.trim()}”</div>
+          <IconChevron />
+        </button>
+      )}
+      <Manual label="My model isn’t listed" placeholder="e.g. Grand Cherokee SRT" onDone={onPick} />
     </div>
   )
 }

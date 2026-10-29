@@ -8,8 +8,9 @@ import { summary, type CarTask } from '../lib/status'
 import { CAR_COLORS, dailyKm, removeAppointment, removeCar, setKmAuto, setOdometer, updateCarInfo, useCar } from '../store'
 import type { Car, SpecKey } from '../types'
 import { BookingSheet } from './BookingSheet'
-import { IconBack, IconChevron, IconGauge, IconMore } from './Icons'
+import { IconBack, IconChevron, IconGauge, IconMore, IconPlus } from './Icons'
 import { Sheet } from './Sheet'
+import { ScanSheet } from './ScanSheet'
 import { SpecEditor } from './SpecEditor'
 import { TaskSheet } from './TaskSheet'
 import { ViewPager } from './ViewPager'
@@ -24,6 +25,7 @@ export function CarPage({ id, openTask }: { id: string; openTask?: string }) {
   const [specKey, setSpecKey] = useState<SpecKey | null>(null)
   const [menu, setMenu] = useState(false)
   const [showAll, setShowAll] = useState(false)
+  const [scan, setScan] = useState(false)
 
   if (!car) {
     return (
@@ -123,6 +125,22 @@ export function CarPage({ id, openTask }: { id: string; openTask?: string }) {
         </div>
       </section>
 
+      {car.receipts && car.receipts.length > 0 && (
+        <section>
+          <h2 className="section-title">Receipts</h2>
+          <div className="card list">
+            {car.receipts.map((r) => (
+              <div key={r.scannedAt} className="row">
+                <div className="row-main">
+                  <div className="row-title">{r.shop ?? 'Receipt'}{r.total !== null ? ` · $${r.total.toFixed(2)}` : ''}</div>
+                  <div className="row-sub">{dayMonth(r.date)} · {r.taskIds.map((t) => TASKS_BY_ID[t]?.name).join(', ') || r.summary}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+
       <section>
         <h2 className="section-title">Spec sheet</h2>
         <div className="card list">
@@ -143,6 +161,15 @@ export function CarPage({ id, openTask }: { id: string; openTask?: string }) {
       <BookingSheet car={car} taskId={bookId} onClose={() => setBookId(null)} />
       <SpecEditor car={car} specKey={specKey} onClose={() => setSpecKey(null)} />
       <CarMenu car={car} open={menu} onClose={() => setMenu(false)} />
+      <ScanSheet car={car} open={scan} onClose={() => setScan(false)} />
+
+      <button className="fab" onClick={() => setScan(true)} aria-label="Scan a receipt">
+        <span className="fab-ring" aria-hidden />
+        <span className="fab-core">
+          <IconPlus />
+        </span>
+        <span className="fab-label">Scan receipt</span>
+      </button>
     </div>
   )
 }

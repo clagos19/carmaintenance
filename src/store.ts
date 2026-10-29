@@ -1,6 +1,6 @@
 import { useSyncExternalStore } from 'react'
 import { resolveSpecs } from './lib/specs'
-import type { Appointment, Car, CarSpecs, SpecKey, TaskRecord } from './types'
+import type { Appointment, Car, CarSpecs, Receipt, SpecKey, TaskRecord } from './types'
 
 const KEY = 'carmaint:v1'
 const DAY = 86400000
@@ -194,6 +194,13 @@ export function addAppointment(id: string, a: Appointment) {
 
 export function removeAppointment(id: string, index: number) {
   updateCar(id, (c) => ({ ...c, appointments: c.appointments.filter((_, i) => i !== index) }))
+}
+
+/** Apply a scanned receipt: clear each confirmed task and keep a record of the receipt. */
+export function applyReceipt(id: string, r: Receipt, km: number) {
+  const date = r.date
+  for (const taskId of r.taskIds) clearTask(id, taskId, { km, date, note: r.shop ? `Receipt from ${r.shop}` : 'From a receipt' })
+  updateCar(id, (c) => ({ ...c, receipts: [r, ...(c.receipts ?? [])].slice(0, 50) }))
 }
 
 export function exportData() {
