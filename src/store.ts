@@ -169,6 +169,10 @@ export function confirmSpec(id: string, key: SpecKey) {
   updateCar(id, (c) => ({ ...c, sources: { ...c.sources, [key]: 'you' } }))
 }
 
+export function setAlerts(id: string, taskId: string, on: boolean) {
+  updateCar(id, (c) => ({ ...c, alerts: { ...c.alerts, [taskId]: on } }))
+}
+
 export function updateCarInfo(id: string, patch: Partial<Pick<Car, 'nickname' | 'color' | 'trim' | 'year'>>) {
   updateCar(id, (c) => ({ ...c, ...patch }))
 }

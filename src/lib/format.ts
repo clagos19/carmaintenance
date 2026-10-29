@@ -19,6 +19,7 @@ export const todayIso = () => new Date().toISOString()
 /** One short line about when a task is due, e.g. "Overdue by 1,200 km" or "In 3,000 km · ~Mar 2027". */
 export function dueLine(st: TaskStatus, car: Car): string {
   const parts: string[] = []
+  if (st.status === 'off') return 'Alerts off'
   if (st.status === 'overdue') {
     if (st.kmLeft !== null && st.kmLeft <= 0) parts.push(st.kmLeft === 0 ? 'Due now' : `Overdue by ${km(-st.kmLeft)}`)
     else if (st.daysLeft !== null && st.daysLeft <= 0) parts.push(st.daysLeft > -2 ? 'Due today' : `Overdue since ${dayMonth(st.dueDate!)}`)

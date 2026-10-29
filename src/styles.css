@@ -94,11 +94,13 @@ p { margin: 0; }
 .dot-overdue { background: var(--red); box-shadow: 0 0 0 4px var(--red-soft); }
 .dot-soon { background: var(--amber); box-shadow: 0 0 0 4px var(--amber-soft); }
 .dot-ok { background: var(--green); box-shadow: 0 0 0 4px var(--green-soft); }
+.dot-off { background: #c3c7cf; box-shadow: 0 0 0 4px var(--surface-2); }
 
 .pill { display: inline-flex; align-items: center; height: 24px; padding: 0 10px; border-radius: 99px; font-size: 12.5px; font-weight: 650; white-space: nowrap; }
 .pill-red { background: var(--red-soft); color: #c4363b; }
 .pill-amber { background: var(--amber-soft); color: #a8661a; }
 .pill-green { background: var(--green-soft); color: #23825a; }
+.pill-grey { background: var(--surface-2); color: var(--muted); }
 .pills { display: flex; gap: 6px; flex-wrap: wrap; }
 
 .src { font-size: 11.5px; font-weight: 650; padding: 3px 8px; border-radius: 99px; white-space: nowrap; }
@@ -236,6 +238,8 @@ input:focus, select:focus { border-color: rgba(53, 99, 233, 0.45); box-shadow: 0
 .toggle-ui::after { content: ''; position: absolute; top: 3px; left: 3px; width: 22px; height: 22px; border-radius: 50%; background: #fff; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.18); transition: transform 0.2s; }
 .toggle input:checked + .toggle-ui { background: var(--green); }
 .toggle input:checked + .toggle-ui::after { transform: translateX(18px); }
+.alert-toggle { justify-content: space-between; gap: 14px; padding: 12px 14px; border-radius: 16px; background: var(--surface-2); }
+.alert-toggle-text { display: flex; flex-direction: column; gap: 2px; line-height: 1.3; font-size: 15px; }
 .toggle input:focus-visible + .toggle-ui { box-shadow: 0 0 0 4px rgba(53, 99, 233, 0.2); }
 
 .appts { border-top: 1px solid var(--line); padding: 4px 0; }
@@ -266,12 +270,14 @@ input:focus, select:focus { border-color: rgba(53, 99, 233, 0.45); box-shadow: 0
 .hs-overdue .hs-dot { background: var(--red); }
 .hs-soon .hs-dot { background: var(--amber); }
 .hs-ok .hs-dot { background: var(--green); }
+.hs-off .hs-dot { background: #c3c7cf; }
 .hotspot.on { z-index: 3; }
 .hotspot.on .hs-dot { transform: scale(1.35); }
 .hotspot.on::before { content: ''; position: absolute; inset: 2px; border-radius: 50%; animation: ping 1.6s ease-out infinite; }
 .hs-overdue.on::before { background: rgba(229, 72, 77, 0.35); }
 .hs-soon.on::before { background: rgba(233, 162, 59, 0.35); }
 .hs-ok.on::before { background: rgba(47, 158, 107, 0.3); }
+.hs-off.on::before { background: rgba(125, 132, 145, 0.25); }
 @keyframes ping { 0% { transform: scale(0.6); opacity: 1; } 100% { transform: scale(1.9); opacity: 0; } }
 .hs-label { position: absolute; left: 30px; top: 50%; transform: translateY(-50%); white-space: nowrap; padding: 5px 10px; border-radius: 10px; background: rgba(20, 23, 28, 0.86); color: #fff; font-size: 12.5px; font-weight: 600; pointer-events: none; animation: fade 0.25s ease both; }
 .hs-label.left { left: auto; right: 30px; }
@@ -312,6 +318,7 @@ input:focus, select:focus { border-color: rgba(53, 99, 233, 0.45); box-shadow: 0
 .due-overdue { background: var(--red-soft); }
 .due-soon { background: var(--amber-soft); }
 .due-ok { background: var(--green-soft); }
+.due-off { background: var(--surface-2); }
 .due-main { font-size: 19px; font-weight: 700; letter-spacing: -0.02em; }
 .banner { display: flex; gap: 12px; align-items: center; padding: 14px; border-radius: 16px; }
 .banner-green { background: var(--green-soft); color: #1f6e4c; }

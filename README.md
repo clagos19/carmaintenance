@@ -13,6 +13,7 @@ A mobile-first web app for tracking maintenance on your cars. Built for iPhone (
 - **Mark as done** to reset the task and see when it is due next.
 - **Book** with a provider, bundle other due jobs into the same visit, save the appointment and add it to your calendar.
 - **Scan a receipt** with the Scan button on a car's page. Claude reads the photo and offers to mark the matching jobs as done. Uses your own Anthropic API key, stored only on the phone (about a cent per scan).
+- **Quiet jobs**: washer fluid and tire pressure don't raise alerts by default, since the dashboard already warns about them. Turn alerts on (or off for any other job) from the job's sheet.
 - **Back up and restore** your data as a file. Everything else stays on your phone.
 
 ## Run it

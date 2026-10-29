@@ -2,8 +2,8 @@ import { useState } from 'react'
 import { PROVIDERS } from '../data/providers'
 import { TASKS_BY_ID, costFactor } from '../data/tasks'
 import { carName, dayMonth, dueLine, km, money, monthYear } from '../lib/format'
-import { nextAfterClear, taskStatus } from '../lib/status'
-import { clearTask, removeRecord } from '../store'
+import { alertsOn, nextAfterClear, taskStatus } from '../lib/status'
+import { clearTask, removeRecord, setAlerts } from '../store'
 import type { Car, Provider } from '../types'
 import { IconCalendar, IconCheck, IconPlay } from './Icons'
 import { Sheet } from './Sheet'
@@ -55,8 +55,8 @@ export function TaskSheet({ car, taskId, onClose, onBook }: { car: Car; taskId: 
           </div>
         ) : (
           <div className={`due-box due-${st.status}`}>
-            <StatusPill status={st.status} />
-            <div className="due-main">{dueLine(st, car)}</div>
+            {st.status !== 'off' && <StatusPill status={st.status} />}
+            <div className="due-main">{st.status === 'off' ? 'Not flagged when due' : dueLine(st, car)}</div>
             <div className="small muted">
               {st.last
                 ? `Last done at ${km(st.last.km)} on ${dayMonth(st.last.date)}.`
@@ -65,6 +65,15 @@ export function TaskSheet({ car, taskId, onClose, onBook }: { car: Car; taskId: 
             </div>
           </div>
         )}
+
+        <label className="toggle alert-toggle">
+          <span className="alert-toggle-text">
+            <strong>Due alerts</strong>
+            <span className="tiny muted">{task.dashWarning ? `${task.dashWarning} Off unless you turn it on.` : 'Flag this job in red and amber when it comes due.'}</span>
+          </span>
+          <input type="checkbox" role="switch" checked={alertsOn(task, car)} onChange={(e) => setAlerts(car.id, task.id, e.target.checked)} />
+          <span className="toggle-ui" />
+        </label>
 
         <p>{task.why}</p>
 

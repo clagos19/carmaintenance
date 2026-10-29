@@ -31,6 +31,11 @@ export function lastRecord(car: Car, taskId: string): TaskRecord | null {
   return h && h.length ? h[h.length - 1] : null
 }
 
+/** Whether a job raises due-now and due-soon alerts on this car. */
+export function alertsOn(task: TaskDef, car: Car) {
+  return car.alerts?.[task.id] ?? !task.dashWarning
+}
+
 export function taskStatus(task: TaskDef, car: Car, now = new Date()): TaskStatus {
   const odo = car.odometerKm
   const intervalKm = task.km(car.specs)
@@ -71,6 +76,8 @@ export function taskStatus(task: TaskDef, car: Car, now = new Date()): TaskStatu
   if ((kmLeft !== null && kmLeft <= 0) || (daysLeft !== null && daysLeft <= 0)) status = 'overdue'
   else if ((kmLeft !== null && kmLeft <= soonKm) || (daysLeft !== null && daysLeft <= 30)) status = 'soon'
 
+  if (!alertsOn(task, car)) status = 'off'
+
   return { status, kmLeft, dueKm, dueDate, daysLeft, estimated, last }
 }
 
@@ -79,7 +86,7 @@ export interface CarTask {
   st: TaskStatus
 }
 
-const RANK: Record<Status, number> = { overdue: 0, soon: 1, ok: 2 }
+const RANK: Record<Status, number> = { overdue: 0, soon: 1, ok: 2, off: 3 }
 
 /** Rough number of days until the km-based due point, using the yearly km. */
 export function daysUntilKm(car: Car, kmLeft: number) {

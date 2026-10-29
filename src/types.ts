@@ -83,11 +83,14 @@ export interface Car {
   /** Receipts and work orders read with the scanner */
   receipts?: Receipt[]
   photos?: Partial<Record<ViewId, CarPhoto>>
+  /** Per-job alert switches. Missing means the job's default (off for jobs the car's dashboard already warns about). */
+  alerts?: Record<string, boolean>
   profileComplete: boolean
   createdAt: string
 }
 
-export type Status = 'overdue' | 'soon' | 'ok'
+/** 'off' = alerts are turned off for this job on this car */
+export type Status = 'overdue' | 'soon' | 'ok' | 'off'
 
 export interface TaskStatus {
   status: Status

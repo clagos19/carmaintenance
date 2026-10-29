@@ -184,7 +184,7 @@ function TaskRow({ t, car, onOpen }: { t: CarTask; car: Car; onOpen: (id: string
         <div className="row-title">{t.task.name}</div>
         <div className="row-sub">
           {dueLine(t.st, car)}
-          {t.st.estimated && t.st.status !== 'ok' ? ' · estimated' : ''}
+          {t.st.estimated && (t.st.status === 'overdue' || t.st.status === 'soon') ? ' · estimated' : ''}
         </div>
       </div>
       <IconChevron />

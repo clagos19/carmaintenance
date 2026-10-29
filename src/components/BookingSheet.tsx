@@ -28,7 +28,7 @@ export function BookingSheet({ car, taskId, onClose }: { car: Car; taskId: strin
   const p = provider ?? task.bookWith[0]
   const info = PROVIDERS[p]
   // Other jobs due now or soon that the same shop can do in one visit.
-  const bundle = carTasks(car).filter((t) => t.task.id !== task.id && t.st.status !== 'ok' && t.task.bookWith.includes(p))
+  const bundle = carTasks(car).filter((t) => t.task.id !== task.id && (t.st.status === 'overdue' || t.st.status === 'soon') && t.task.bookWith.includes(p))
   const ids = [task.id, ...extra.filter((id) => bundle.some((b) => b.task.id === id))]
   const names = ids.map((id) => TASKS_BY_ID[id].name)
 

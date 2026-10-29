@@ -29,6 +29,8 @@ export interface TaskDef {
   diy?: DiyGuide
   /** Search phrase for YouTube, appended to year/make/model */
   video: string
+  /** The dashboard warns about this one, so alerts start off */
+  dashWarning?: string
   bookWith: Provider[]
 }
 
@@ -269,6 +271,7 @@ export const TASKS: TaskDef[] = [
       ],
     },
     video: 'refill windshield washer fluid',
+    dashWarning: 'Most cars show a low washer fluid light.',
     bookWith: ['mrlube'],
   },
 
@@ -438,6 +441,7 @@ export const TASKS: TaskDef[] = [
       ],
     },
     video: 'check tire pressure and tread depth',
+    dashWarning: 'Your tire pressure light (TPMS) comes on when a tire is low.',
     bookWith: ['kaltire'],
   },
   {

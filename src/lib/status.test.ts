@@ -16,6 +16,13 @@ function car(odometerKm: number, history: Car['history'] = {}): Car {
 const now = new Date('2026-10-29T12:00:00Z')
 
 describe('taskStatus', () => {
+  it('keeps dashboard-warned jobs quiet until alerts are turned on', () => {
+    const c = car(50000, { washer: [{ km: 40000, date: '2026-01-01T00:00:00Z' }] })
+    expect(taskStatus(TASKS_BY_ID.washer, c, now).status).toBe('off')
+    expect(taskStatus(TASKS_BY_ID.washer, { ...c, alerts: { washer: true } }, now).status).toBe('overdue')
+    expect(taskStatus(TASKS_BY_ID.oil, { ...c, alerts: { oil: false } }, now).status).toBe('off')
+  })
+
   it('flags an oil change past its km interval as overdue', () => {
     const c = car(50000, { oil: [{ km: 41000, date: '2026-06-01T00:00:00Z' }] })
     const st = taskStatus(TASKS_BY_ID.oil, c, now)
