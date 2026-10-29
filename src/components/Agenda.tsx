@@ -3,6 +3,7 @@ import { TASKS_BY_ID } from '../data/tasks'
 import { dayMonth, dueLine } from '../lib/format'
 import { summary } from '../lib/status'
 import { useCars } from '../store'
+import type { Car } from '../types'
 import { IconChevron } from './Icons'
 import { StatusDot } from './bits'
 
@@ -22,14 +23,16 @@ export function Agenda() {
         <h2 className="section-title">{title}</h2>
         <div className="card list">
           {items.map(({ task, st, car }) => (
-            <a key={car.id + task.id} className="row" href={`#/car/${car.id}?task=${task.id}`}>
-              <StatusDot status={st.status} />
-              <div className="row-main">
-                <div className="row-title">{task.name}</div>
-                <div className="row-sub">{car.nickname || `${car.make} ${car.model}`} · {dueLine(st, car)}</div>
-              </div>
-              <IconChevron />
-            </a>
+            <div key={car.id + task.id} className="row agenda-row">
+              <a className="agenda-main" href={`#/car/${car.id}?task=${task.id}`}>
+                <StatusDot status={st.status} />
+                <div className="row-main">
+                  <div className="row-title">{task.name}</div>
+                  <div className="row-sub">{dueLine(st, car)}</div>
+                </div>
+              </a>
+              <CarLink car={car} />
+            </div>
           ))}
         </div>
       </section>
@@ -47,17 +50,19 @@ export function Agenda() {
           <h2 className="section-title">Appointments</h2>
           <div className="card list">
             {appts.map(({ car, a }, i) => (
-              <a key={i} className="row" href={`#/car/${car.id}`}>
-                <div className="date-badge">
-                  <span>{new Date(a.date).toLocaleDateString('en-CA', { month: 'short' })}</span>
-                  <strong>{new Date(a.date).getDate()}</strong>
-                </div>
-                <div className="row-main">
-                  <div className="row-title">{PROVIDERS[a.provider].name} · {new Date(a.date).toLocaleTimeString('en-CA', { hour: 'numeric', minute: '2-digit' })}</div>
-                  <div className="row-sub">{car.nickname || `${car.make} ${car.model}`} · {a.taskIds.map((t) => TASKS_BY_ID[t]?.name).join(', ')}</div>
-                </div>
-                <IconChevron />
-              </a>
+              <div key={i} className="row agenda-row">
+                <a className="agenda-main" href={`#/car/${car.id}${a.taskIds[0] ? `?task=${a.taskIds[0]}` : ''}`}>
+                  <div className="date-badge">
+                    <span>{new Date(a.date).toLocaleDateString('en-CA', { month: 'short' })}</span>
+                    <strong>{new Date(a.date).getDate()}</strong>
+                  </div>
+                  <div className="row-main">
+                    <div className="row-title">{PROVIDERS[a.provider].name} · {new Date(a.date).toLocaleTimeString('en-CA', { hour: 'numeric', minute: '2-digit' })}</div>
+                    <div className="row-sub">{a.taskIds.map((t) => TASKS_BY_ID[t]?.name).join(', ')}</div>
+                  </div>
+                </a>
+                <CarLink car={car} />
+              </div>
             ))}
           </div>
         </section>
@@ -74,5 +79,15 @@ export function Agenda() {
         </div>
       )}
     </div>
+  )
+}
+
+/** A pill naming the car that takes you to its page. */
+function CarLink({ car }: { car: Car }) {
+  return (
+    <a className="car-link" href={`#/car/${car.id}`} aria-label={`Go to ${car.nickname || `${car.make} ${car.model}`}`}>
+      <span>{car.nickname || car.model}</span>
+      <IconChevron />
+    </a>
   )
 }
