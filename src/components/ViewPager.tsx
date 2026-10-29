@@ -59,7 +59,7 @@ export function ViewPager({ car, onOpen }: { car: Car; onOpen: (taskId: string) 
           msg = 'Couldn’t place the dots automatically. Use Adjust dots to place them.'
         }
       } else {
-        msg = 'Add your AI key (via the + button) to place dots automatically, or use Adjust dots.'
+        msg = 'Add your AI key (via the Scan button) to place dots automatically, or use Adjust dots.'
       }
       setPhoto(car.id, v, { src: img.preview, aspect: img.aspect, spots })
       setNote(storageFull ? { text: 'Your phone’s storage for this app is full, so the photo won’t be kept. Remove another photo first.', err: true } : { text: msg })
