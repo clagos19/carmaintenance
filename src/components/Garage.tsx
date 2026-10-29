@@ -6,6 +6,7 @@ import { exportData, importData, useCars } from '../store'
 import { downloadFile } from '../lib/ics'
 import { CarHero } from './CarHero'
 import { IconChevron, IconPlus } from './Icons'
+import { Sheet } from './Sheet'
 import { StatusDot } from './bits'
 
 export function Garage() {
@@ -15,12 +16,18 @@ export function Garage() {
   const soonCount = sums.reduce((n, s) => n + s.soon.length, 0)
   const fileRef = useRef<HTMLInputElement>(null)
   const [msg, setMsg] = useState('')
+  const [backup, setBackup] = useState(false)
 
   return (
     <div className="stack">
       <header className="page-head">
         <p className="eyebrow">{new Date().toLocaleDateString('en-CA', { weekday: 'long', month: 'long', day: 'numeric' })}</p>
-        <h1>Garage</h1>
+        <div className="head-row">
+          <h1>Garage</h1>
+          <button className="quiet-btn" onClick={() => { setMsg(''); setBackup(true) }}>
+            Backup
+          </button>
+        </div>
       </header>
 
       {cars.length === 0 ? (
@@ -84,36 +91,37 @@ export function Garage() {
         </>
       )}
 
-      <section className="card subtle">
-        <h3>Your data</h3>
-        <p className="muted small">Everything is saved on this phone. Make a backup now and then, or to move to a new phone.</p>
-        <div className="btn-row">
-          <button className="btn btn-soft" onClick={() => downloadFile(`car-maintenance-backup-${new Date().toISOString().slice(0, 10)}.json`, exportData(), 'application/json')}>
-            Back up
-          </button>
-          <button className="btn btn-soft" onClick={() => fileRef.current?.click()}>
-            Restore
-          </button>
+      <Sheet open={backup} onClose={() => setBackup(false)} title="Backup">
+        <div className="stack-sm">
+          <p className="muted small">Everything is saved on this phone. Save a backup file now and then, or use Restore to bring your cars to a new phone.</p>
+          <div className="btn-row">
+            <button className="btn btn-soft" onClick={() => downloadFile(`car-maintenance-backup-${new Date().toISOString().slice(0, 10)}.json`, exportData(), 'application/json')}>
+              Back up
+            </button>
+            <button className="btn btn-soft" onClick={() => fileRef.current?.click()}>
+              Restore
+            </button>
+          </div>
+          {msg && <p className="small">{msg}</p>}
+          <input
+            ref={fileRef}
+            type="file"
+            accept="application/json,.json"
+            hidden
+            onChange={async (e) => {
+              const f = e.target.files?.[0]
+              if (!f) return
+              try {
+                importData(await f.text())
+                setMsg('Backup restored.')
+              } catch {
+                setMsg('That file is not a backup from this app.')
+              }
+              e.target.value = ''
+            }}
+          />
         </div>
-        {msg && <p className="small">{msg}</p>}
-        <input
-          ref={fileRef}
-          type="file"
-          accept="application/json,.json"
-          hidden
-          onChange={async (e) => {
-            const f = e.target.files?.[0]
-            if (!f) return
-            try {
-              importData(await f.text())
-              setMsg('Backup restored.')
-            } catch {
-              setMsg('That file is not a backup from this app.')
-            }
-            e.target.value = ''
-          }}
-        />
-      </section>
+      </Sheet>
     </div>
   )
 }
