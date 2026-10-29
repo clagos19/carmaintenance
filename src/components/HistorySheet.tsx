@@ -1,7 +1,8 @@
 import { TASKS_BY_ID } from '../data/tasks'
 import { dayMonth, km } from '../lib/format'
-import type { Car } from '../types'
-import { IconChevron } from './Icons'
+import { findReceipt } from '../store'
+import type { Car, Receipt } from '../types'
+import { IconChevron, IconReceipt } from './Icons'
 import { Sheet } from './Sheet'
 
 /** Every job done on this car, newest first, with the date and the kilometers at the time. */
@@ -12,7 +13,7 @@ export function serviceLog(car: Car) {
     .sort((a, b) => b.date.localeCompare(a.date) || b.km - a.km)
 }
 
-export function HistorySheet({ car, open, onClose, onOpen }: { car: Car; open: boolean; onClose: () => void; onOpen: (taskId: string) => void }) {
+export function HistorySheet({ car, open, onClose, onOpen, onReceipt }: { car: Car; open: boolean; onClose: () => void; onOpen: (taskId: string) => void; onReceipt: (r: Receipt) => void }) {
   const log = serviceLog(car)
   const years = [...new Set(log.map((r) => new Date(r.date).getFullYear()))]
   return (
@@ -22,7 +23,7 @@ export function HistorySheet({ car, open, onClose, onOpen }: { car: Car; open: b
       ) : (
         <div className="stack-sm">
           <p className="small muted">
-            {log.length} service{log.length === 1 ? '' : 's'} logged. Tap one to see the job.
+            {log.length} service{log.length === 1 ? '' : 's'} logged. Tap one to see the job, or Receipt to see the photo.
           </p>
           {years.map((y) => (
             <section key={y} className="stack-sm">
@@ -30,8 +31,11 @@ export function HistorySheet({ car, open, onClose, onOpen }: { car: Car; open: b
               <div className="card inset list">
                 {log
                   .filter((r) => new Date(r.date).getFullYear() === y)
-                  .map((r, i) => (
-                    <button key={r.taskId + r.date + i} className="row" onClick={() => onOpen(r.taskId)}>
+                  .map((r, i) => {
+                    const receipt = findReceipt(car, r.receiptId)
+                    return (
+                    <div key={r.taskId + r.date + i} className="row history-row">
+                    <button className="history-main" onClick={() => onOpen(r.taskId)}>
                       <div className="history-date">
                         <span>{new Date(r.date).toLocaleDateString('en-CA', { month: 'short' })}</span>
                         <strong>{new Date(r.date).getDate()}</strong>
@@ -43,9 +47,17 @@ export function HistorySheet({ car, open, onClose, onOpen }: { car: Car; open: b
                           {r.note ? ` · ${r.note}` : ''}
                         </div>
                       </div>
-                      <IconChevron />
                     </button>
-                  ))}
+                    {receipt ? (
+                      <button className="receipt-btn" onClick={() => onReceipt(receipt)}>
+                        <IconReceipt /> Receipt
+                      </button>
+                    ) : (
+                      <IconChevron />
+                    )}
+                    </div>
+                    )
+                  })}
               </div>
             </section>
           ))}

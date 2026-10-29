@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { TASKS_BY_ID } from '../data/tasks'
 import { km } from '../lib/format'
 import { ScanError, getApiKey, prepareImage, scanReceipt, setApiKey, type ScanMatch, type ScanResult } from '../lib/scan'
-import { applyReceipt, setOdometer } from '../store'
+import { applyReceipt, attachReceiptImage, setOdometer } from '../store'
 import type { Car } from '../types'
 import { IconCheck } from './Icons'
 import { Sheet } from './Sheet'
@@ -15,6 +15,9 @@ export function ScanSheet({ car, open, onClose }: { car: Car; open: boolean; onC
   const [phase, setPhase] = useState<Phase>('pick')
   const [key, setKey] = useState('')
   const [preview, setPreview] = useState('')
+  const [keepImage, setKeepImage] = useState('')
+  const [saveImage, setSaveImage] = useState(true)
+  const [imageNote, setImageNote] = useState('')
   const [result, setResult] = useState<ScanResult | null>(null)
   const [error, setError] = useState('')
   const [picked, setPicked] = useState<string[]>([])
@@ -37,6 +40,8 @@ export function ScanSheet({ car, open, onClose }: { car: Car; open: boolean; onC
     try {
       const img = await prepareImage(file)
       setPreview(img.preview)
+      // A smaller copy to keep on the phone: still readable, about a fifth of the size.
+      setKeepImage((await prepareImage(file, 1400, 0.7)).preview)
       setPhase('reading')
       const r = await scanReceipt(car, img.data, getApiKey())
       setResult(r)
@@ -54,9 +59,11 @@ export function ScanSheet({ car, open, onClose }: { car: Car; open: boolean; onC
     if (!result) return
     const kmVal = parseInt(odo.replace(/\D/g, ''), 10) || car.odometerKm
     if (kmVal > car.odometerKm) setOdometer(car.id, kmVal)
+    const receiptId = `r${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`
     applyReceipt(
       car.id,
       {
+        id: receiptId,
         date: new Date(date + 'T12:00:00').toISOString(),
         shop: result.shop,
         total: result.total,
@@ -67,6 +74,10 @@ export function ScanSheet({ car, open, onClose }: { car: Car; open: boolean; onC
       kmVal,
     )
     setDoneCount(picked.length)
+    setImageNote('')
+    if (saveImage && keepImage) {
+      attachReceiptImage(car.id, receiptId, keepImage).catch(() => setImageNote('The photo couldn’t be saved on this phone, but your tasks were updated.'))
+    }
     setPhase('done')
   }
 
@@ -175,6 +186,17 @@ export function ScanSheet({ car, open, onClose }: { car: Car; open: boolean; onC
               <p className="muted">We couldn’t match anything on this receipt to your maintenance list.</p>
             )}
 
+            {result.isServiceDocument && (
+              <label className="toggle alert-toggle">
+                <span className="alert-toggle-text">
+                  <strong>Keep the receipt photo</strong>
+                  <span className="tiny muted">Saved on this phone. View it from History.</span>
+                </span>
+                <input type="checkbox" role="switch" checked={saveImage} onChange={(e) => setSaveImage(e.target.checked)} />
+                <span className="toggle-ui" />
+              </label>
+            )}
+
             <button className="btn btn-primary btn-block" disabled={!picked.length} onClick={apply}>
               <IconCheck /> Update {picked.length} task{picked.length === 1 ? '' : 's'}
             </button>
@@ -188,9 +210,13 @@ export function ScanSheet({ car, open, onClose }: { car: Car; open: boolean; onC
               <IconCheck />
               <div>
                 <strong>Updated {doneCount} task{doneCount === 1 ? '' : 's'}.</strong>
-                <div className="small">Logged at {km(parseInt(odo.replace(/\D/g, ''), 10) || car.odometerKm)}. The receipt is saved under this car.</div>
+                <div className="small">
+                  Logged at {km(parseInt(odo.replace(/\D/g, ''), 10) || car.odometerKm)}.{' '}
+                  {saveImage ? 'The receipt and its photo are saved under this car.' : 'The receipt is saved under this car.'}
+                </div>
               </div>
             </div>
+            {imageNote && <div className="banner banner-amber small">{imageNote}</div>}
             <button className="btn btn-primary btn-block" onClick={onClose}>Done</button>
           </>
         )}

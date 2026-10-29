@@ -3,13 +3,13 @@ import { PROVIDERS } from '../data/providers'
 import { TASKS_BY_ID, costFactor } from '../data/tasks'
 import { carName, dayMonth, dueLine, km, money, monthYear } from '../lib/format'
 import { alertsOn, nextAfterClear, taskStatus } from '../lib/status'
-import { clearTask, removeRecord, setAlerts } from '../store'
-import type { Car, Provider } from '../types'
-import { IconCalendar, IconCheck, IconPlay } from './Icons'
+import { clearTask, findReceipt, removeRecord, setAlerts } from '../store'
+import type { Car, Provider, Receipt } from '../types'
+import { IconCalendar, IconCheck, IconPlay, IconReceipt } from './Icons'
 import { Sheet } from './Sheet'
 import { StatusPill } from './bits'
 
-export function TaskSheet({ car, taskId, onClose, onBook }: { car: Car; taskId: string | null; onClose: () => void; onBook: (taskId: string) => void }) {
+export function TaskSheet({ car, taskId, onClose, onBook, onReceipt }: { car: Car; taskId: string | null; onClose: () => void; onBook: (taskId: string) => void; onReceipt: (r: Receipt) => void }) {
   const task = taskId ? TASKS_BY_ID[taskId] : null
   const [clearing, setClearing] = useState(false)
   const [doneKm, setDoneKm] = useState('')
@@ -25,6 +25,7 @@ export function TaskSheet({ car, taskId, onClose, onBook }: { car: Car; taskId: 
   const dateVal = doneDate ? new Date(doneDate + 'T12:00:00').toISOString() : new Date().toISOString()
   const preview = nextAfterClear(task, car, kmVal, dateVal)
   const history = car.history[task.id] ?? []
+  const lastReceipt = findReceipt(car, st.last?.receiptId)
   const yt = `https://www.youtube.com/results?search_query=${encodeURIComponent(`${carName(car)} ${task.video}`)}`
   const intervalParts = [
     task.km(car.specs) ? `every ${km(task.km(car.specs))}` : '',
@@ -73,6 +74,11 @@ export function TaskSheet({ car, taskId, onClose, onBook }: { car: Car; taskId: 
             </span>
           ) : (
             <span className="muted">No record yet. Mark it as done to start the history.</span>
+          )}
+          {lastReceipt && (
+            <button className="receipt-btn last-receipt" onClick={() => onReceipt(lastReceipt)}>
+              <IconReceipt /> View receipt
+            </button>
           )}
         </div>
 
@@ -173,17 +179,25 @@ export function TaskSheet({ car, taskId, onClose, onBook }: { car: Car; taskId: 
               {history
                 .map((h, i) => ({ h, i }))
                 .reverse()
-                .map(({ h, i }) => (
+                .map(({ h, i }) => {
+                  const r = findReceipt(car, h.receiptId)
+                  return (
                   <div key={i} className="row">
                     <div className="row-main">
                       <div className="row-title">{km(h.km)}</div>
                       <div className="row-sub">{dayMonth(h.date)}{h.note ? ` · ${h.note}` : ''}</div>
                     </div>
+                    {r && (
+                      <button className="receipt-btn" onClick={() => onReceipt(r)}>
+                        <IconReceipt /> Receipt
+                      </button>
+                    )}
                     <button className="link-btn" onClick={() => removeRecord(car.id, task.id, i)}>
                       Remove
                     </button>
                   </div>
-                ))}
+                )
+                })}
             </div>
           </>
         )}
