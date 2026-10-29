@@ -1,6 +1,6 @@
 import { useSyncExternalStore } from 'react'
 import { resolveSpecs } from './lib/specs'
-import type { Appointment, Car, CarPhoto, CarSpecs, Receipt, SpecKey, TaskRecord, ViewId, WikiPhoto } from './types'
+import type { Appointment, Car, CarPhoto, CarSpecs, Receipt, SpecKey, TaskRecord, ViewId } from './types'
 
 const KEY = 'carmaint:v1'
 const DAY = 86400000
@@ -223,10 +223,6 @@ export function setPhotoSpot(id: string, view: ViewId, key: string, pt: { x: num
     if (!p) return c
     return { ...c, photos: { ...c.photos, [view]: { ...p, spots: { ...p.spots, [key]: pt } } } }
   })
-}
-
-export function setWikiPhoto(id: string, w: WikiPhoto | null) {
-  updateCar(id, (c) => ({ ...c, wikiPhoto: w }))
 }
 
 export function exportData() {

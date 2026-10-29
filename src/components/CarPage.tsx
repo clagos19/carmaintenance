@@ -59,7 +59,7 @@ export function CarPage({ id, openTask }: { id: string; openTask?: string }) {
         <p className="muted">{carName(car)}{car.trim ? ` ${car.trim}` : ''} · {car.specs.engine}</p>
       </header>
 
-      <CarHero car={car} />
+      {car.photos?.side && <CarHero car={car} />}
 
       <Odometer car={car} />
 

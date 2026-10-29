@@ -1,51 +1,7 @@
 import Anthropic from '@anthropic-ai/sdk'
 import { SPOTS } from '../art/CarArt'
-import type { Car, ViewId, WikiPhoto } from '../types'
+import type { Car, ViewId } from '../types'
 import { carName } from './format'
-
-// ---------------------------------------------------------------- Wikipedia photo
-
-const strip = (html: string) => html.replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim()
-
-async function summary(title: string) {
-  const res = await fetch(`https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(title.replace(/ /g, '_'))}`)
-  if (!res.ok) return null
-  const s = await res.json()
-  if (s.type !== 'standard' || !s.originalimage?.source) return null
-  return s as { title: string; content_urls: { mobile: { page: string } }; thumbnail?: { source: string }; originalimage: { source: string } }
-}
-
-/**
- * The lead photo of the model's Wikipedia article, with its Commons author and licence for the credit line.
- * Returns null when there is no article or no usable photo.
- */
-export async function fetchWikiPhoto(make: string, model: string): Promise<WikiPhoto | null> {
-  // "Mazda Mazda3" reads better as "Mazda3"
-  const name = model.toLowerCase().startsWith(make.toLowerCase()) ? model : `${make} ${model}`
-  try {
-    const s = (await summary(name)) ?? (await summary(`${name} (automobile)`))
-    if (!s) return null
-    const file = decodeURIComponent(s.originalimage.source.split('/').pop() ?? '')
-    let credit = 'Wikimedia Commons'
-    let license = ''
-    try {
-      const meta = await fetch(
-        `https://commons.wikimedia.org/w/api.php?action=query&titles=File:${encodeURIComponent(file)}&prop=imageinfo&iiprop=extmetadata&format=json&origin=*`,
-      ).then((r) => r.json())
-      const page = Object.values(meta.query?.pages ?? {})[0] as { imageinfo?: { extmetadata?: Record<string, { value: string }> }[] }
-      const md = page?.imageinfo?.[0]?.extmetadata ?? {}
-      if (md.Artist?.value) credit = strip(md.Artist.value)
-      if (md.LicenseShortName?.value) license = strip(md.LicenseShortName.value)
-    } catch {
-      /* keep the generic credit */
-    }
-    // A 1280px thumbnail keeps phones fast; the original can be huge.
-    const src = s.thumbnail?.source ? s.thumbnail.source.replace(/\/\d+px-/, '/1280px-') : s.originalimage.source
-    return { src, credit, license, page: `https://commons.wikimedia.org/wiki/File:${encodeURIComponent(file)}` }
-  } catch {
-    return null
-  }
-}
 
 // ---------------------------------------------------------------- AI placement of the dots
 

@@ -62,7 +62,7 @@ export function Garage() {
             {sums.map(({ car, now, soon }) => (
               <a key={car.id} className="car-card" href={`#/car/${car.id}`}>
                 <div className="car-card-art">
-                  <CarHero car={car} creditLink={false} />
+                  <CarHero car={car} />
                 </div>
                 <div className="car-card-info">
                   <div>
