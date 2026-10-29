@@ -1,4 +1,5 @@
 import type { Car, TaskStatus } from '../types'
+import { POS_LABEL } from './tread'
 import { daysUntilKm } from './status'
 
 export const km = (n: number) => `${Math.round(n).toLocaleString('en-CA')} km`
@@ -20,6 +21,12 @@ export const todayIso = () => new Date().toISOString()
 export function dueLine(st: TaskStatus, car: Car): string {
   const parts: string[] = []
   if (st.status === 'off') return 'Alerts off'
+  if (st.tread) {
+    const t = st.tread
+    const where = `${t.set.toLowerCase()} set, ${POS_LABEL[t.pos].toLowerCase()}`
+    if (t.depth <= t.replaceAt) return `${t.depth}/32 on ${where} · replace now`
+    return `${t.depth}/32 on ${where} · ${st.kmLeft !== null ? `~${km(st.kmLeft)} to ${t.replaceAt}/32` : `replace at ${t.replaceAt}/32`}`
+  }
   if (st.status === 'overdue') {
     if (st.kmLeft !== null && st.kmLeft <= 0) parts.push(st.kmLeft === 0 ? 'Due now' : `Overdue by ${km(-st.kmLeft)}`)
     else if (st.daysLeft !== null && st.daysLeft <= 0) parts.push(st.daysLeft > -2 ? 'Due today' : `Overdue since ${dayMonth(st.dueDate!)}`)

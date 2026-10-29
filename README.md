@@ -16,6 +16,7 @@ A mobile-first web app for tracking maintenance on your cars. Built for iPhone (
 - **Quiet jobs**: washer fluid and tire pressure don't raise alerts by default, since the dashboard already warns about them. Turn alerts on (or off for any other job) from the job's sheet.
 - **History**: the History button on a car's page lists every service you've logged, newest first, with the date and km at the time. Each job's page shows its last service at the top.
 - **Receipt photos**: scanned receipts keep a compressed photo on the phone (IndexedDB). Open it from History, the job's page or the Receipts list, and save it to Photos from there. Backups include the photos.
+- **Tire tread**: on the tire jobs, add tire sets (winter, all-season…) and log tread per tire in 32nds with date and km. Tire replacement is then driven by the most worn tire (winter: flag at 6/32, replace at 5/32; all-season/summer: 4/32 and 3/32), with a km projection once there are two readings.
 - **Back up and restore** your data as a file. Everything else stays on your phone.
 
 ## Run it

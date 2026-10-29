@@ -90,12 +90,32 @@ export interface Car {
   photos?: Partial<Record<ViewId, CarPhoto>>
   /** Per-job alert switches. Missing means the job's default (off for jobs the car's dashboard already warns about). */
   alerts?: Record<string, boolean>
+  tireSets?: TireSet[]
   profileComplete: boolean
   createdAt: string
 }
 
 /** 'off' = alerts are turned off for this job on this car */
 export type Status = 'overdue' | 'soon' | 'ok' | 'off'
+
+export type TirePos = 'FL' | 'FR' | 'RL' | 'RR'
+export type TireKind = 'winter' | 'all-season' | 'all-weather' | 'summer'
+
+/** Tread depth in 32nds of an inch for each tire, measured on one day */
+export interface TreadReading {
+  date: string
+  km: number
+  depths: Partial<Record<TirePos, number>>
+}
+
+export interface TireSet {
+  id: string
+  name: string
+  kind: TireKind
+  /** On the car right now */
+  mounted: boolean
+  readings: TreadReading[]
+}
 
 export interface TaskStatus {
   status: Status
@@ -107,4 +127,6 @@ export interface TaskStatus {
   /** true when there is no service record and the last service was estimated */
   estimated: boolean
   last: TaskRecord | null
+  /** For tire replacement: the most worn tire, when tread has been measured */
+  tread?: { set: string; pos: TirePos; depth: number; replaceAt: number }
 }

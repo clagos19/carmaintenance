@@ -429,3 +429,30 @@ input:focus, select:focus { border-color: rgba(53, 99, 233, 0.45); box-shadow: 0
 .receipt-icon { display: grid; place-items: center; width: 36px; height: 36px; border-radius: 10px; background: var(--accent-soft); color: var(--accent); flex-shrink: 0; }
 .receipt-icon svg { width: 18px; height: 18px; }
 .last-receipt { align-self: flex-start; margin-top: 6px; }
+
+.tread { padding: 14px; display: flex; flex-direction: column; gap: 12px; }
+.tread-head { display: flex; align-items: center; justify-content: space-between; }
+.tread-head h3 { margin: 0; }
+.tread .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.tread .chip { height: 34px; font-size: 13.5px; }
+.tire-grid { position: relative; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 10px 56px; padding: 4px 0; }
+.tire-car { position: absolute; left: 50%; top: 6px; bottom: 6px; width: 44px; margin-left: -22px; border-radius: 20px 20px 14px 14px; background: linear-gradient(90deg, #d5d9df, #eef0f3 50%, #d5d9df); box-shadow: inset 0 0 0 1px var(--line); }
+.tire-car::before { content: ''; position: absolute; left: 7px; right: 7px; top: 26%; height: 16%; border-radius: 6px 6px 3px 3px; background: #3a414c; }
+.tire { position: relative; display: flex; flex-direction: column; gap: 2px; padding: 10px; min-width: 0; border-radius: 14px; background: var(--surface); border: 1.5px solid var(--line); }
+.tire-FL, .tire-RL { align-items: flex-start; }
+.tire-FR, .tire-RR { align-items: flex-end; text-align: right; }
+.tire-pos { font-size: 11.5px; font-weight: 650; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; }
+.tire strong { font-size: 22px; letter-spacing: -0.02em; }
+.tire strong small { font-size: 12px; color: var(--muted); font-weight: 600; margin-left: 1px; }
+.tire-ok { border-color: rgba(47, 158, 107, 0.35); }
+.tire-soon { border-color: rgba(233, 162, 59, 0.6); background: var(--amber-soft); }
+.tire-overdue { border-color: rgba(229, 72, 77, 0.5); background: var(--red-soft); }
+.tire-overdue strong { color: #c4363b; }
+.tire-step { display: flex; align-items: center; gap: 6px; }
+.tire-step button { width: 28px; height: 28px; flex-shrink: 0; border-radius: 50%; background: var(--surface-2); border: 1px solid var(--line); font-size: 18px; font-weight: 600; line-height: 1; color: var(--ink-2); }
+.tread-log { border-top: 1px solid var(--line); }
+.tread-log .row { padding-left: 0; padding-right: 0; }
+.tread-log .row-sub { font-variant-numeric: tabular-nums; white-space: pre; }
+.check-line { display: flex; align-items: center; gap: 8px; }
+.check-line input { width: 18px; height: 18px; accent-color: var(--green); }
+.muted-link { color: var(--muted); align-self: flex-start; font-size: 13px; }

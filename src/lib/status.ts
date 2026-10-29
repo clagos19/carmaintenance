@@ -1,5 +1,6 @@
 import { TASKS_BY_ID, tasksFor, type TaskDef } from '../data/tasks'
 import type { Car, Status, TaskRecord, TaskStatus } from '../types'
+import { worstSet } from './tread'
 
 const DAY = 86400000
 
@@ -75,6 +76,16 @@ export function taskStatus(task: TaskDef, car: Car, now = new Date()): TaskStatu
   const soonKm = intervalKm > 0 ? Math.max(1000, intervalKm * 0.15) : 0
   if ((kmLeft !== null && kmLeft <= 0) || (daysLeft !== null && daysLeft <= 0)) status = 'overdue'
   else if ((kmLeft !== null && kmLeft <= soonKm) || (daysLeft !== null && daysLeft <= 30)) status = 'soon'
+
+  // Measured tread beats the km estimate for tire replacement; the age limit still applies.
+  const wear = task.id === 'tires' ? worstSet(car) : null
+  if (wear) {
+    const age: Status = daysLeft !== null && daysLeft <= 0 ? 'overdue' : daysLeft !== null && daysLeft <= 30 ? 'soon' : 'ok'
+    status = RANK[wear.status] <= RANK[age] ? wear.status : age
+    const tread = { set: wear.set.name, pos: wear.pos, depth: wear.depth, replaceAt: wear.replaceAt }
+    if (!alertsOn(task, car)) status = 'off'
+    return { status, kmLeft: wear.kmLeft, dueKm: null, dueDate, daysLeft, estimated: false, last, tread }
+  }
 
   if (!alertsOn(task, car)) status = 'off'
 
