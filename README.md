@@ -15,6 +15,7 @@ A mobile-first web app for tracking maintenance on your cars. Built for iPhone (
 - **Scan a receipt** with the Scan button on a car's page. Claude reads the photo and offers to mark the matching jobs as done. Uses your own Anthropic API key, stored only on the phone (about a cent per scan).
 - **Quiet jobs**: washer fluid and tire pressure don't raise alerts by default, since the dashboard already warns about them. Turn alerts on (or off for any other job) from the job's sheet.
 - **History**: the History button on a car's page lists every service you've logged, newest first, with the date and km at the time. Each job's page shows its last service at the top.
+- **Receipt photos**: scanned receipts keep a compressed photo on the phone (IndexedDB). Open it from History, the job's page or the Receipts list, and save it to Photos from there. Backups include the photos.
 - **Back up and restore** your data as a file. Everything else stays on your phone.
 
 ## Run it

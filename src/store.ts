@@ -1,5 +1,6 @@
 import { useSyncExternalStore } from 'react'
 import { resolveSpecs } from './lib/specs'
+import { allReceiptImages, deleteReceiptImage, saveReceiptImage } from './lib/receiptImages'
 import type { Appointment, Car, CarPhoto, CarSpecs, Receipt, SpecKey, TaskRecord, ViewId } from './types'
 
 const KEY = 'carmaint:v1'
@@ -150,7 +151,9 @@ export function addCar(n: NewCar): Car {
 }
 
 export function removeCar(id: string) {
+  const gone = state.cars.find((c) => c.id === id)
   set({ ...state, cars: state.cars.filter((c) => c.id !== id) })
+  for (const r of gone?.receipts ?? []) if (r.id && r.hasImage) deleteReceiptImage(r.id).catch(() => {})
 }
 
 export function setOdometer(id: string, km: number) {
@@ -208,8 +211,18 @@ export function removeAppointment(id: string, index: number) {
 /** Apply a scanned receipt: clear each confirmed task and keep a record of the receipt. */
 export function applyReceipt(id: string, r: Receipt, km: number) {
   const date = r.date
-  for (const taskId of r.taskIds) clearTask(id, taskId, { km, date, note: r.shop ? `Receipt from ${r.shop}` : 'From a receipt' })
-  updateCar(id, (c) => ({ ...c, receipts: [r, ...(c.receipts ?? [])].slice(0, 50) }))
+  for (const taskId of r.taskIds) clearTask(id, taskId, { km, date, note: r.shop ? `Receipt from ${r.shop}` : 'From a receipt', receiptId: r.id })
+  updateCar(id, (c) => ({ ...c, receipts: [r, ...(c.receipts ?? [])] }))
+}
+
+/** Save a receipt's photo, then mark the receipt as having one. */
+export async function attachReceiptImage(carId: string, receiptId: string, dataUrl: string) {
+  await saveReceiptImage(receiptId, dataUrl)
+  updateCar(carId, (c) => ({ ...c, receipts: (c.receipts ?? []).map((r) => (r.id === receiptId ? { ...r, hasImage: true } : r)) }))
+}
+
+export function findReceipt(car: Car, receiptId: string | undefined) {
+  return receiptId ? car.receipts?.find((r) => r.id === receiptId) : undefined
 }
 
 export function setPhoto(id: string, view: ViewId, photo: CarPhoto | null) {
@@ -229,12 +242,16 @@ export function setPhotoSpot(id: string, view: ViewId, key: string, pt: { x: num
   })
 }
 
-export function exportData() {
-  return JSON.stringify(state, null, 2)
+/** A backup holds the cars plus every saved receipt photo. */
+export async function exportData() {
+  return JSON.stringify({ ...state, receiptImages: await allReceiptImages() })
 }
 
-export function importData(json: string) {
-  const s = JSON.parse(json) as State
+export async function importData(json: string) {
+  const { receiptImages, ...s } = JSON.parse(json) as State & { receiptImages?: Record<string, string> }
   if (!Array.isArray(s.cars)) throw new Error('Not a backup file')
   set(s)
+  let failed = 0
+  for (const [id, url] of Object.entries(receiptImages ?? {})) await saveReceiptImage(id, url).catch(() => failed++)
+  return { photos: Object.keys(receiptImages ?? {}).length - failed, failed }
 }

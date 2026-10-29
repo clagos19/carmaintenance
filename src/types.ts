@@ -35,6 +35,8 @@ export interface TaskRecord {
   km: number
   date: string // ISO date
   note?: string
+  /** The scanned receipt this record came from */
+  receiptId?: string
 }
 
 export interface Appointment {
@@ -45,6 +47,9 @@ export interface Appointment {
 }
 
 export interface Receipt {
+  /** Also the key of its photo in receipt storage, when one was saved */
+  id?: string
+  hasImage?: boolean
   date: string
   shop: string | null
   total: number | null

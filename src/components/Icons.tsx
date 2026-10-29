@@ -48,3 +48,6 @@ export const IconSearch = () => (
 export const IconHistory = () => (
   <svg {...base}><path d="M3.5 12a8.5 8.5 0 1 0 2.5-6" /><path d="M3.5 4v4h4M12 7.5V12l3 2" /></svg>
 )
+export const IconReceipt = () => (
+  <svg {...base}><path d="M6 3h12v18l-3-2-3 2-3-2-3 2z" /><path d="M9 8h6M9 12h6M9 16h3" /></svg>
+)

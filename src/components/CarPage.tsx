@@ -6,11 +6,12 @@ import { back, go } from '../lib/nav'
 import { ASSUMPTION_ORDER, SPEC_LABELS, formatSpec } from '../lib/specs'
 import { summary, type CarTask } from '../lib/status'
 import { CAR_COLORS, dailyKm, removeAppointment, removeCar, setKmAuto, setOdometer, updateCarInfo, useCar } from '../store'
-import type { Car, SpecKey } from '../types'
+import type { Car, Receipt, SpecKey } from '../types'
 import { BookingSheet } from './BookingSheet'
 import { CarHero } from './CarHero'
 import { HistorySheet, serviceLog } from './HistorySheet'
-import { IconBack, IconChevron, IconGauge, IconHistory, IconMore } from './Icons'
+import { ReceiptViewer } from './ReceiptViewer'
+import { IconBack, IconChevron, IconGauge, IconHistory, IconMore, IconReceipt } from './Icons'
 import { Sheet } from './Sheet'
 import { ScanSheet } from './ScanSheet'
 import { SpecEditor } from './SpecEditor'
@@ -27,6 +28,7 @@ export function CarPage({ id, openTask }: { id: string; openTask?: string }) {
   const [specKey, setSpecKey] = useState<SpecKey | null>(null)
   const [menu, setMenu] = useState(false)
   const [history, setHistory] = useState(false)
+  const [receipt, setReceipt] = useState<Receipt | null>(null)
   const [scan, setScan] = useState(false)
 
   if (!car) {
@@ -135,12 +137,14 @@ export function CarPage({ id, openTask }: { id: string; openTask?: string }) {
           <h2 className="section-title">Receipts</h2>
           <div className="card list">
             {car.receipts.map((r) => (
-              <div key={r.scannedAt} className="row">
+              <button key={r.scannedAt} className="row" onClick={() => setReceipt(r)}>
+                <span className="receipt-icon"><IconReceipt /></span>
                 <div className="row-main">
                   <div className="row-title">{r.shop ?? 'Receipt'}{r.total !== null ? ` · $${r.total.toFixed(2)}` : ''}</div>
                   <div className="row-sub">{dayMonth(r.date)} · {r.taskIds.map((t) => TASKS_BY_ID[t]?.name).join(', ') || r.summary}</div>
                 </div>
-              </div>
+                <IconChevron />
+              </button>
             ))}
           </div>
         </section>
@@ -162,12 +166,13 @@ export function CarPage({ id, openTask }: { id: string; openTask?: string }) {
         <p className="tiny muted pad">Spec sheet values are typical for this model. Your owner’s manual is the final word.</p>
       </section>
 
-      <TaskSheet car={car} taskId={taskId} onClose={() => setTaskId(null)} onBook={(t) => { setTaskId(null); setBookId(t) }} />
+      <TaskSheet car={car} taskId={taskId} onClose={() => setTaskId(null)} onBook={(t) => { setTaskId(null); setBookId(t) }} onReceipt={(r) => { setTaskId(null); setReceipt(r) }} />
       <BookingSheet car={car} taskId={bookId} onClose={() => setBookId(null)} />
       <SpecEditor car={car} specKey={specKey} onClose={() => setSpecKey(null)} />
       <CarMenu car={car} open={menu} onClose={() => setMenu(false)} />
       <ScanSheet car={car} open={scan} onClose={() => setScan(false)} />
-      <HistorySheet car={car} open={history} onClose={() => setHistory(false)} onOpen={(t) => { setHistory(false); setTaskId(t) }} />
+      <HistorySheet car={car} open={history} onClose={() => setHistory(false)} onOpen={(t) => { setHistory(false); setTaskId(t) }} onReceipt={(r) => { setHistory(false); setReceipt(r) }} />
+      <ReceiptViewer receipt={receipt} onClose={() => setReceipt(null)} />
 
       <button className="fab" onClick={() => setScan(true)} aria-label="Scan a receipt">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>

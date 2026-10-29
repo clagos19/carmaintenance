@@ -93,9 +93,9 @@ export function Garage() {
 
       <Sheet open={backup} onClose={() => setBackup(false)} title="Backup">
         <div className="stack-sm">
-          <p className="muted small">Everything is saved on this phone. Save a backup file now and then, or use Restore to bring your cars to a new phone.</p>
+          <p className="muted small">Everything is saved on this phone. The backup file includes your saved receipt photos. Save one now and then, or use Restore to bring your cars to a new phone.</p>
           <div className="btn-row">
-            <button className="btn btn-soft" onClick={() => downloadFile(`car-maintenance-backup-${new Date().toISOString().slice(0, 10)}.json`, exportData(), 'application/json')}>
+            <button className="btn btn-soft" onClick={async () => downloadFile(`car-maintenance-backup-${new Date().toISOString().slice(0, 10)}.json`, await exportData(), 'application/json')}>
               Back up
             </button>
             <button className="btn btn-soft" onClick={() => fileRef.current?.click()}>
@@ -112,8 +112,8 @@ export function Garage() {
               const f = e.target.files?.[0]
               if (!f) return
               try {
-                importData(await f.text())
-                setMsg('Backup restored.')
+                const r = await importData(await f.text())
+                setMsg(r.failed ? `Backup restored, but ${r.failed} receipt photo${r.failed === 1 ? '' : 's'} couldn’t be saved on this phone.` : 'Backup restored.')
               } catch {
                 setMsg('That file is not a backup from this app.')
               }
