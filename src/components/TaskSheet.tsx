@@ -7,7 +7,10 @@ import { clearTask, findReceipt, removeRecord, setAlerts } from '../store'
 import type { Car, Provider, Receipt } from '../types'
 import { IconCalendar, IconCheck, IconPlay, IconReceipt } from './Icons'
 import { Sheet } from './Sheet'
+import { TreadCard } from './TreadCard'
 import { StatusPill } from './bits'
+
+const TIRE_TASKS = ['tires', 'tire-check', 'tire-swap', 'rotation']
 
 export function TaskSheet({ car, taskId, onClose, onBook, onReceipt }: { car: Car; taskId: string | null; onClose: () => void; onBook: (taskId: string) => void; onReceipt: (r: Receipt) => void }) {
   const task = taskId ? TASKS_BY_ID[taskId] : null
@@ -59,8 +62,10 @@ export function TaskSheet({ car, taskId, onClose, onBook, onReceipt }: { car: Ca
             {st.status !== 'off' && <StatusPill status={st.status} />}
             <div className="due-main">{st.status === 'off' ? 'Not flagged when due' : dueLine(st, car)}</div>
             <div className="small muted">
-              {!st.last && 'Without a record, the last service is estimated from your kilometers.'}
-              {intervalParts.length > 0 && ` Recommended ${intervalParts.join(' or ')}${car.specs.drivingStyle === 'severe' ? ' (severe conditions)' : ''}.`}
+              {st.tread
+                ? 'Based on your latest tread reading. Tires also age out after about 6 years, whatever the tread.'
+                : !st.last && 'Without a record, the last service is estimated from your kilometers.'}
+              {!st.tread && intervalParts.length > 0 && ` Recommended ${intervalParts.join(' or ')}${car.specs.drivingStyle === 'severe' ? ' (severe conditions)' : ''}.`}
             </div>
           </div>
         )}
@@ -90,6 +95,8 @@ export function TaskSheet({ car, taskId, onClose, onBook, onReceipt }: { car: Ca
           <input type="checkbox" role="switch" checked={alertsOn(task, car)} onChange={(e) => setAlerts(car.id, task.id, e.target.checked)} />
           <span className="toggle-ui" />
         </label>
+
+        {TIRE_TASKS.includes(task.id) && <TreadCard car={car} />}
 
         <p>{task.why}</p>
 

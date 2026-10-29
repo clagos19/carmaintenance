@@ -1,7 +1,7 @@
 import { useSyncExternalStore } from 'react'
 import { resolveSpecs } from './lib/specs'
 import { allReceiptImages, deleteReceiptImage, saveReceiptImage } from './lib/receiptImages'
-import type { Appointment, Car, CarPhoto, CarSpecs, Receipt, SpecKey, TaskRecord, ViewId } from './types'
+import type { Appointment, Car, CarPhoto, CarSpecs, Receipt, SpecKey, TaskRecord, TireKind, TreadReading, ViewId } from './types'
 
 const KEY = 'carmaint:v1'
 const DAY = 86400000
@@ -240,6 +240,42 @@ export function setPhotoSpot(id: string, view: ViewId, key: string, pt: { x: num
     if (!p) return c
     return { ...c, photos: { ...c.photos, [view]: { ...p, spots: { ...p.spots, [key]: pt } } } }
   })
+}
+
+// ---------------------------------------------------------------- tires
+
+export function addTireSet(carId: string, name: string, kind: TireKind) {
+  const id = `t${Date.now().toString(36)}${Math.random().toString(36).slice(2, 5)}`
+  updateCar(carId, (c) => {
+    const sets = c.tireSets ?? []
+    return { ...c, tireSets: [...sets, { id, name, kind, mounted: sets.length === 0, readings: [] }] }
+  })
+  return id
+}
+
+export function removeTireSet(carId: string, setId: string) {
+  updateCar(carId, (c) => ({ ...c, tireSets: (c.tireSets ?? []).filter((s) => s.id !== setId) }))
+}
+
+/** Put one set on the car; the others come off. */
+export function mountTireSet(carId: string, setId: string) {
+  updateCar(carId, (c) => ({ ...c, tireSets: (c.tireSets ?? []).map((s) => ({ ...s, mounted: s.id === setId })) }))
+}
+
+export function addTreadReading(carId: string, setId: string, r: TreadReading) {
+  updateCar(carId, (c) => ({
+    ...c,
+    tireSets: (c.tireSets ?? []).map((s) =>
+      s.id === setId ? { ...s, readings: [...s.readings, r].sort((a, b) => a.date.localeCompare(b.date) || a.km - b.km) } : s,
+    ),
+  }))
+}
+
+export function removeTreadReading(carId: string, setId: string, index: number) {
+  updateCar(carId, (c) => ({
+    ...c,
+    tireSets: (c.tireSets ?? []).map((s) => (s.id === setId ? { ...s, readings: s.readings.filter((_, i) => i !== index) } : s)),
+  }))
 }
 
 /** A backup holds the cars plus every saved receipt photo. */
