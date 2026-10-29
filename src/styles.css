@@ -409,3 +409,6 @@ input:focus, select:focus { border-color: rgba(53, 99, 233, 0.45); box-shadow: 0
 .car-link { display: inline-flex; align-items: center; gap: 2px; max-width: 42%; height: 32px; padding: 0 6px 0 12px; border-radius: 99px; background: var(--accent-soft); color: var(--accent); font-size: 13.5px; font-weight: 650; text-decoration: none; flex-shrink: 0; }
 .car-link span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .car-link svg { width: 16px; height: 16px; color: var(--accent) !important; flex-shrink: 0; }
+
+.head-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.quiet-btn { height: 30px; padding: 0 12px; border-radius: 99px; font-size: 13.5px; font-weight: 600; color: var(--muted); background: rgba(255,255,255,0.55); border: 1px solid rgba(20,23,28,0.06); }
