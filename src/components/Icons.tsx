@@ -45,3 +45,6 @@ export const IconWrench = () => (
 export const IconSearch = () => (
   <svg {...base}><circle cx="11" cy="11" r="6.5" /><path d="m20 20-4.2-4.2" /></svg>
 )
+export const IconHistory = () => (
+  <svg {...base}><path d="M3.5 12a8.5 8.5 0 1 0 2.5-6" /><path d="M3.5 4v4h4M12 7.5V12l3 2" /></svg>
+)

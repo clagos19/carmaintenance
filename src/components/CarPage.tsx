@@ -9,7 +9,8 @@ import { CAR_COLORS, dailyKm, removeAppointment, removeCar, setKmAuto, setOdomet
 import type { Car, SpecKey } from '../types'
 import { BookingSheet } from './BookingSheet'
 import { CarHero } from './CarHero'
-import { IconBack, IconChevron, IconGauge, IconMore } from './Icons'
+import { HistorySheet, serviceLog } from './HistorySheet'
+import { IconBack, IconChevron, IconGauge, IconHistory, IconMore } from './Icons'
 import { Sheet } from './Sheet'
 import { ScanSheet } from './ScanSheet'
 import { SpecEditor } from './SpecEditor'
@@ -25,7 +26,7 @@ export function CarPage({ id, openTask }: { id: string; openTask?: string }) {
   const [bookId, setBookId] = useState<string | null>(null)
   const [specKey, setSpecKey] = useState<SpecKey | null>(null)
   const [menu, setMenu] = useState(false)
-  const [showAll, setShowAll] = useState(false)
+  const [history, setHistory] = useState(false)
   const [scan, setScan] = useState(false)
 
   if (!car) {
@@ -38,6 +39,7 @@ export function CarPage({ id, openTask }: { id: string; openTask?: string }) {
   }
 
   const { now, soon, all } = summary(car)
+  const logCount = serviceLog(car).length
   const specKeys = ASSUMPTION_ORDER.filter((k) => !(car.specs.powertrain === 'ev' && EV_SKIP.includes(k)))
   const assumed = specKeys.filter((k) => car.sources[k] === 'assumed')
   const upcoming = car.appointments.map((a, i) => ({ a, i })).filter(({ a }) => new Date(a.date).getTime() > Date.now() - 86400000)
@@ -115,16 +117,16 @@ export function CarPage({ id, openTask }: { id: string; openTask?: string }) {
       <ViewPager car={car} onOpen={setTaskId} />
 
       <section>
-        <h2 className="section-title">All maintenance</h2>
+        <div className="section-head">
+          <h2 className="section-title">All maintenance</h2>
+          <button className="history-btn" onClick={() => setHistory(true)}>
+            <IconHistory /> History{logCount ? ` · ${logCount}` : ''}
+          </button>
+        </div>
         <div className="card list">
-          {(showAll ? all : all.slice(0, 8)).map((t) => (
+          {all.map((t) => (
             <TaskRow key={t.task.id} t={t} car={car} onOpen={setTaskId} />
           ))}
-          {all.length > 8 && (
-            <button className="row more-row" onClick={() => setShowAll((s) => !s)}>
-              {showAll ? 'Show less' : `Show all ${all.length}`}
-            </button>
-          )}
         </div>
       </section>
 
@@ -165,6 +167,7 @@ export function CarPage({ id, openTask }: { id: string; openTask?: string }) {
       <SpecEditor car={car} specKey={specKey} onClose={() => setSpecKey(null)} />
       <CarMenu car={car} open={menu} onClose={() => setMenu(false)} />
       <ScanSheet car={car} open={scan} onClose={() => setScan(false)} />
+      <HistorySheet car={car} open={history} onClose={() => setHistory(false)} onOpen={(t) => { setHistory(false); setTaskId(t) }} />
 
       <button className="fab" onClick={() => setScan(true)} aria-label="Scan a receipt">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>

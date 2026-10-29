@@ -58,13 +58,23 @@ export function TaskSheet({ car, taskId, onClose, onBook }: { car: Car; taskId: 
             {st.status !== 'off' && <StatusPill status={st.status} />}
             <div className="due-main">{st.status === 'off' ? 'Not flagged when due' : dueLine(st, car)}</div>
             <div className="small muted">
-              {st.last
-                ? `Last done at ${km(st.last.km)} on ${dayMonth(st.last.date)}.`
-                : 'No service record yet. Last service is estimated from your kilometers.'}
+              {!st.last && 'Without a record, the last service is estimated from your kilometers.'}
               {intervalParts.length > 0 && ` Recommended ${intervalParts.join(' or ')}${car.specs.drivingStyle === 'severe' ? ' (severe conditions)' : ''}.`}
             </div>
           </div>
         )}
+
+        <div className="last-service">
+          <span className="last-service-label">Last service</span>
+          {st.last ? (
+            <span>
+              <strong>{dayMonth(st.last.date)}</strong> at <strong>{km(st.last.km)}</strong>
+              {st.last.note ? <span className="muted"> · {st.last.note}</span> : null}
+            </span>
+          ) : (
+            <span className="muted">No record yet. Mark it as done to start the history.</span>
+          )}
+        </div>
 
         <label className="toggle alert-toggle">
           <span className="alert-toggle-text">

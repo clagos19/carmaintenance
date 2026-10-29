@@ -392,3 +392,14 @@ input:focus, select:focus { border-color: rgba(53, 99, 233, 0.45); box-shadow: 0
 .art-wrap.adjusting { cursor: crosshair; outline: 2px dashed rgba(53, 99, 233, 0.5); outline-offset: 4px; border-radius: 20px; }
 .slide.has-photo .art-wrap { width: 100%; max-height: 62dvh; }
 .slide.has-photo { padding: 8px 16px; }
+
+.section-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.section-head .section-title { margin-bottom: 10px; }
+.history-btn { display: inline-flex; align-items: center; gap: 6px; height: 34px; padding: 0 14px 0 11px; margin-bottom: 4px; border-radius: 99px; background: var(--surface); box-shadow: var(--shadow); color: var(--ink-2); font-size: 14px; font-weight: 600; }
+.history-btn svg { width: 17px; height: 17px; color: var(--accent); }
+.history-year { font-size: 15px; color: var(--muted); margin: 6px 2px 0; }
+.history-date { display: flex; flex-direction: column; align-items: center; justify-content: center; width: 44px; height: 44px; border-radius: 12px; background: var(--accent-soft); color: var(--accent); flex-shrink: 0; line-height: 1.05; }
+.history-date span { font-size: 11px; font-weight: 650; text-transform: uppercase; letter-spacing: 0.04em; }
+.history-date strong { font-size: 17px; }
+.last-service { display: flex; flex-direction: column; gap: 2px; padding: 12px 14px; border-radius: 16px; border: 1px solid var(--line); font-size: 15px; }
+.last-service-label { font-size: 12px; font-weight: 650; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; }
